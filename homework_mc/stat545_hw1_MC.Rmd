@@ -1,0 +1,12 @@
+---
+title: "Stat 545 homework 1"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load packages
+
+library(tidyverse)
