@@ -8,5 +8,32 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Load packages
-
+```{r, load packages}
 library(tidyverse)
+library(gapminder)
+```
+
+## Exercise 1 - Basic dplyr
+```{r, exercise 1}
+# Examine the dataset to make sure it imported properly
+glimpse(gapminder)
+head(gapminder)
+tail(gapminder)
+colSums(is.na(gapminder))
+
+# How to determine which countries are possible to use
+table(gapminder$country)
+
+# 1.1 and 1.2 Filter down to year and countries of choice
+gapminder %>% 
+  filter(year >= 1970 & year <= 1979, 
+         country == "Canada" | country == "Colombia" | country == "Cote d'Ivoire") %>%
+  select(country, gdpPercap)
+
+# 1.3 Drop in life expectancy
+gapminder %>% 
+  group_by(country) %>% 
+  mutate(delta_life_exp = gdpPercap - lag(gdpPercap)) %>%
+  filter(delta_life_exp < 0) 
+# Note that Dplyr functions automatically removes NAs and don't accept the na.rm argument
+```

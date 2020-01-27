@@ -9,7 +9,7 @@ Related websites for additional info:
 R for data science - https://r4ds.had.co.nz
 /n New UBC stats site - https://stat545.stat.ubc.ca
 /n Advanced R (first edition) - http://adv-r.had.co.nz
-/n Tidyverse style guide (including some info on functions, etc) - https://style.tidyverse.org
+/n Tidyverse style guide (ie how to make your code consistently legible to everyone) - https://style.tidyverse.org
 
 Assignments:
 https://stat545.stat.ubc.ca/evaluation/assignments/
