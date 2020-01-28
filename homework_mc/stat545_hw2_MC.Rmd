@@ -8,21 +8,19 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Load packages
-```{r, load packages}
+```{r load packages, echo = FALSE}
 library(tidyverse)
 library(gapminder)
 ```
 
 ## Exercise 1 - Basic dplyr
-```{r, exercise 1}
+```{r exercise 1}
 # Examine the dataset to make sure it imported properly
 glimpse(gapminder)
 head(gapminder)
 tail(gapminder)
 colSums(is.na(gapminder))
 
-# How to determine which countries are possible to use
-table(gapminder$country)
 
 # 1.1 and 1.2 Filter down to year and countries of choice
 gapminder %>% 
@@ -36,4 +34,23 @@ gapminder %>%
   mutate(delta_life_exp = gdpPercap - lag(gdpPercap)) %>%
   filter(delta_life_exp < 0) 
 # Note that Dplyr functions automatically removes NAs and don't accept the na.rm argument
+
+# 1.4a Max GDP per country
+gapminder %>% 
+  group_by(country) %>% 
+  summarize(max_gdp = max(gdpPercap))
+
+# 1.4b Three countries with the largest GPD and lowest GDP
+gapminder %>% 
+  group_by(country) %>% 
+  summarise(max_gdp = max(gdpPercap)) %>% 
+  filter(min_rank(max_gdp) <= 3 | min_rank(desc(max_gdp)) <= 3) %>% 
+  arrange(max_gdp)
+
+# 1.5 Scatterplot of Canada life expectancy vs GDP
+gapminder %>% 
+  filter(country == "Canada") %>% 
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+    geom_point() +
+    scale_x_log10()
 ```
