@@ -7,6 +7,7 @@ https://stat545.com
 
 Related websites for additional info:
 R for data science - https://r4ds.had.co.nz
+/n Easy intro to R programing - https://rstudio-education.github.io/hopr/
 /n New UBC stats site - https://stat545.stat.ubc.ca
 /n Advanced R (first edition) - http://adv-r.had.co.nz
 /n Tidyverse style guide (ie how to make your code consistently legible to everyone) - https://style.tidyverse.org
