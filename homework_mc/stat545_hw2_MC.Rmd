@@ -1,6 +1,8 @@
 ---
 title: "Stat 545 homework 2"
-output: github_document
+output: 
+  html_document:
+    keep_md: TRUE
 ---
 
 ```{r setup, include=FALSE}
@@ -8,9 +10,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Load packages
-```{r load packages, echo = FALSE}
+```{r echo = FALSE}
 library(tidyverse)
 library(gapminder)
+library(knitr)
 ```
 
 ## Exercise 1 - Basic dplyr
@@ -23,16 +26,20 @@ colSums(is.na(gapminder))
 
 
 # 1.1 and 1.2 Filter down to year and countries of choice
+knitr::kable(
 gapminder %>% 
   filter(year >= 1970 & year <= 1979, 
          country == "Canada" | country == "Colombia" | country == "Cote d'Ivoire") %>%
   select(country, gdpPercap)
+)
 
 # 1.3 Drop in life expectancy
+DT::datatable(
 gapminder %>% 
   group_by(country) %>% 
   mutate(delta_life_exp = gdpPercap - lag(gdpPercap)) %>%
   filter(delta_life_exp < 0) 
+)
 # Note that Dplyr functions automatically removes NAs and don't accept the na.rm argument
 
 # 1.4a Max GDP per country
@@ -53,4 +60,58 @@ gapminder %>%
   ggplot(aes(x = gdpPercap, y = lifeExp)) +
     geom_point() +
     scale_x_log10()
+```
+Apparently to use DT::datatable() you need to render the doc as an html, not as a git_hub doc
+
+## Exercise 2 - explore individual variables
+2.1 Categorical variable - continent
+```{r exercise 2 - categorical}
+n_distinct(gapminder$continent)
+levels(gapminder$continent)
+table(gapminder$continent)
+ggplot(gapminder, aes(x = continent)) +
+  geom_bar()
+```
+
+
+```{r table attempt, results='asis'}
+kable(table(gapminder$continent), caption = "Frequency by continent")
+```
+
+2.2 Quantitative variable - life expectancy
+```{r exercise 2 - quantitative}
+# Range
+range(gapminder$lifeExp)
+
+# 5 var summary and IQR
+summary(gapminder$lifeExp)
+boxplot(gapminder$lifeExp)
+```
+
+## Recycling
+The issue with this command is that it should produce a table of 24 rows, and instead it is only 12
+```{r}
+table(gapminder$country) #Sadly table() does not knit with the datatable function
+
+t <- filter(gapminder, country == c("Rwanda", "Afghanistan"))
+
+nrow(t)
+```
+
+I'm not really sure why this is, but based on the title of the exercise—and the fact that each year is only in the filtered object once- I'd guess that for each set of unique variables (minus country) it alternates looking for Rwanda and then Afghanistan??? 
+
+Apparently you don't get an error if the dataframe has a number of rows equal to the value of the target (ie 2 countries, so if the df is even)
+
+Apparently this is also related to how == works, nothing to do with dplyr 
+
+See this answer on stacks overflow which is the closest answer I've found: https://stackoverflow.com/questions/25647470/filter-multiple-values-on-a-string-column-in-dplyr
+
+Better options: use %in% or use multiple conditions with or (|)
+```{r better than trusting recycling}
+# Option 1: Use group membership
+c_names <- c("Rwanda", "Afghanistan")
+filter(gapminder, country %in% c_names)
+
+# Option 2: Use 'or'
+filter(gapminder, country == "Rwanda" | country == "Afghanistan")
 ```

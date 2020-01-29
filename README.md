@@ -14,7 +14,8 @@ Easy intro to R programing - https://rstudio-education.github.io/hopr/
 New UBC stats site - https://stat545.stat.ubc.ca
 
 Advanced R (first edition) - http://adv-r.had.co.nz
-//n Tidyverse style guide (ie how to make your code consistently legible to everyone) - https://style.tidyverse.org
+
+Tidyverse style guide (ie how to make your code consistently legible to everyone) - https://style.tidyverse.org
 
 Assignments:
 
