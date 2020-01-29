@@ -3,7 +3,10 @@
 # RProject to overwrite someone else's (or your laptop's RProject file to 
 # overwrite your computer's RProject file).
 .Rproj.user
-.Rproj
+*.Rproj  
+# .Rproj has a star in front to "match any pattern" in regex, which for some reason 
+# works to make gitignore actually ignore the file, although supposedly shouldn't need it
+
 
 # Prevent users to commit their own .Rhistory files
 .Rhistory
