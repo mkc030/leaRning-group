@@ -1,0 +1,66 @@
+---
+title: "Tidy lotr data"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Import data
+```{r import, echo=FALSE}
+library(tidyverse)
+fellow <- read_csv("ch8-lotr-dplyr/lotr-tidy-master/data/The_Fellowship_Of_The_Ring.csv")
+tower <- read_csv("ch8-lotr-dplyr/lotr-tidy-master/data/The_Two_Towers.csv")
+king <- read_csv("ch8-lotr-dplyr/lotr-tidy-master/data/The_Return_Of_The_King.csv")
+```
+
+## Untidy lotr data
+```{r untidy the data}
+lotr_untidy <- bind_rows(fellow, tower, king)
+str(lotr_untidy)
+```
+
+## Tidy the untidy data
+#### Use the old function - gather(). 
+This function is no longer recommended for use, but as there are many examples with it, let's use this to compare to the newer version of the same function.
+
+Note here that adding the two variables at the end ('Female' and 'Male') specifies the two columns that are gathered together into two new columns. If you forget to add these, the function defaults to gathering the first two columns in the dataframe. Not helpful in this case!!! 
+
+The first new column *(column name specified using* `key = `*)* is filled by the column names from the original dataset (eg "Female" and "Male" in this case). 
+
+The second new column *(column name specified using* `value = `*)* is filled by the cell values contained within the two gathered columns (eg the numbers representing word count in this case).
+
+```{r tidy the untidy with gather}
+lotr_tidy <- gather(lotr_untidy,
+                    key = "Gender",
+                    value = "Words",
+                    Female, Male)
+```
+
+#### Use the new tidyverse function - `pivot_longer()`. 
+This function replaces gather—*and conversly,* `pivot_wider()` *replaces* `spread()`. See `vignette("pivot")` for details, but in essence: 
+* the first argument is the dataset, 
+* the second argument is the columns to be reshaped, 
+* `names_to` gives the new column name containing values based on the old column names *(eg gender in our case)*, and 
+* `values_to` gives the new column name for the old cell values *(eg word count in our case)*.
+
+The advantage of the new pivot functions are that they can also be used with different datatypes being used as column names (eg dates, numeric data, many variables in one column name, etc), it can drop rows containing NAs in the old cell values, and allows for some additional data maninpulation directly within the pivot function. See vignette for more details. It is really good.
+```{r tidy the untidy with pivot_longer}
+lotr_pivtidy <- lotr_untidy %>% 
+                    pivot_longer(cols = c("Female", "Male"),
+                                 names_to = "Gender",
+                                 values_to = "Words")
+identical(lotr_pivtidy, lotr_tidy) #Hmmm this is false, but maybe just because of different order?
+(d <- setdiff(lotr_pivtidy, lotr_tidy)) #Yes! Returns zero rows different in pivot tidy than tidy
+(d <- setdiff(lotr_tidy, lotr_pivtidy)) #Also zero rows different in tidy than in pivot tidy. Excellent!
+```
+
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
