@@ -1,0 +1,35 @@
+---
+title: "Notes"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Git
+
+### Contribute to a git repo
+
+1. Fork and clone locally  
+Fork in GitHub  
+Clone in RStudio  
+Clone in terminal  
+> git clone git@github.com:ltindale/leaRning-group.git
+
+2. Create an upstream remote and sync your local copy before you branch  
+> git remote add upstream git@https://github.com/mkc030/leaRning-group.git  
+> git remote -v #check
+
+3. Branch for each separate piece of work  
+> git checkout -b my-first-branch
+
+4. Do the work, write a commit message
+
+5. Push to your origin repo
+
+6. Create a new pull request in GitHub
+
+7. Respond to any code review feedback
+
+
