@@ -1,0 +1,79 @@
+---
+title: "Assignment 2"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(gapminder)
+library(tidyverse)
+```
+
+##Exercise 1
+```{r exercise 1}
+# 1.1 and 1.2
+knitr::kable(
+gapminder %>% 
+  filter(country %in% c("Canada", "Japan", "Mexico"),
+       year >= 1970 & year <= 1979) %>% 
+  select(country, gdpPercap)
+)
+
+# 1.3
+gapminder %>%
+  group_by(country) %>% 
+  mutate(le_delta = lifeExp - lag(lifeExp)) %>%
+  filter(le_delta < 0)
+
+# 1.4
+gapminder %>%
+  group_by(country) %>% 
+  summarize(max_gdpPercap = max(gdpPercap, na.rm = TRUE)) %>% 
+  arrange(desc(max_gdpPercap))
+  
+# 1.5
+gapminder %>% 
+  filter(country == "Canada") %>%
+  ggplot(aes(x = gdpPercap, y = lifeExp)) +
+    geom_point() +
+    scale_x_log10()
+```
+
+##Exercise 2
+Categorical var = continent  
+Quantitative var = lifeExp
+```{r exercise 2, echo=FALSE}
+# Country list
+levels(gapminder$continent)
+# Life expectancy summary stats
+summary(gapminder$lifeExp)
+
+gapminder %>% 
+  filter(year == 2007) %>% 
+  group_by(continent) %>% 
+  summarize(avg_le = mean(lifeExp), na.rm = TRUE) %>% 
+  ggplot(aes(x = continent, y = avg_le)) +
+  geom_bar(stat = "identity") +
+  ggtitle("Mean life expectancy by continent in 2007")
+```
+
+##Exercise 3
+```{r exercise , echo=FALSE, fig.width=8, fig.height=12.5}
+# 
+gapminder %>%
+  ggplot(aes(x = factor(year), y = country, fill = lifeExp)) +
+         geom_tile(color = "white") +
+  scale_fill_distiller(palette ="RdYlBu")
+
+```
+
+##Recycling
+
+> filter(gapminder, country == c("Rwanda", "Afghanistan"))  
+> Not sure why this doesn't work  
+> It returns half of the values for each country -- years ending in 7 for Afghanistan and years ending in 2 for Rwanda  
+> It works if you pipe instead of concatinate although I don't know why  
+> filter(gapminder, country == "Rwanda" | country == "Afghanistan")
