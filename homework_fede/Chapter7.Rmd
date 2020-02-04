@@ -1,0 +1,35 @@
+---
+title: "Chapter7_Fede"
+author: "Federico Andrade-Rivas"
+date: "January 29, 2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Loading Libraries
+
+```{r library}
+library(tidyverse)
+library(gapminder)
+```
+
+
+##Create a copy of gapminder
+
+``` {r copyGap}
+library(gapminder)
+my_gap <-gapminder
+my_gap %>% filter(country == "Canada")  
+
+```
+
+
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
