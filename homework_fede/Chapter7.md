@@ -10,14 +10,14 @@ Loading Libraries
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
+    ## ── Attaching packages ────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
 
     ## ✔ ggplot2 3.2.1     ✔ purrr   0.3.3
     ## ✔ tibble  2.1.3     ✔ dplyr   0.8.3
     ## ✔ tidyr   1.0.0     ✔ stringr 1.4.0
     ## ✔ readr   1.3.1     ✔ forcats 0.4.0
 
-    ## ── Conflicts ───────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ───────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -49,6 +49,287 @@ my_gap %>% filter(country == "Canada")
     ## 10 Canada  Americas   1997    78.6 30305843    28955.
     ## 11 Canada  Americas   2002    79.8 31902268    33329.
     ## 12 Canada  Americas   2007    80.7 33390141    36319.
+
+``` r
+#Storing the output as an object
+
+my_precious <- my_gap %>% filter(country =="Canada")
+```
+
+``` r
+ my_gap %>% mutate(gdp = pop*gdpPercap)
+```
+
+    ## # A tibble: 1,704 x 7
+    ##    country     continent  year lifeExp      pop gdpPercap          gdp
+    ##    <fct>       <fct>     <int>   <dbl>    <int>     <dbl>        <dbl>
+    ##  1 Afghanistan Asia       1952    28.8  8425333      779.  6567086330.
+    ##  2 Afghanistan Asia       1957    30.3  9240934      821.  7585448670.
+    ##  3 Afghanistan Asia       1962    32.0 10267083      853.  8758855797.
+    ##  4 Afghanistan Asia       1967    34.0 11537966      836.  9648014150.
+    ##  5 Afghanistan Asia       1972    36.1 13079460      740.  9678553274.
+    ##  6 Afghanistan Asia       1977    38.4 14880372      786. 11697659231.
+    ##  7 Afghanistan Asia       1982    39.9 12881816      978. 12598563401.
+    ##  8 Afghanistan Asia       1987    40.8 13867957      852. 11820990309.
+    ##  9 Afghanistan Asia       1992    41.7 16317921      649. 10595901589.
+    ## 10 Afghanistan Asia       1997    41.8 22227415      635. 14121995875.
+    ## # … with 1,694 more rows
+
+``` r
+# Create a new variable that is gdpPercap divided by Canadian gdpPercap, taking care that I always divide two numbers that pertain to the same year
+
+cgdp <- my_gap %>% filter(country =="Canada")
+
+my_gap <- my_gap %>% mutate(temp = rep(cgdp$gdpPercap, nlevels(country)),
+                            gdpRelaC = gdpPercap/temp,
+                            temp = NULL
+                            )
+#Note: nlevels is used to create a variable that is as long as the number of levels per country. All countries have data for the same years. Otherwise this would not work 
+
+my_gap %>%  filter(country == "Canada") %>% select(country, year, gdpPercap, gdpRelaC)
+```
+
+    ## # A tibble: 12 x 4
+    ##    country  year gdpPercap gdpRelaC
+    ##    <fct>   <int>     <dbl>    <dbl>
+    ##  1 Canada   1952    11367.        1
+    ##  2 Canada   1957    12490.        1
+    ##  3 Canada   1962    13462.        1
+    ##  4 Canada   1967    16077.        1
+    ##  5 Canada   1972    18971.        1
+    ##  6 Canada   1977    22091.        1
+    ##  7 Canada   1982    22899.        1
+    ##  8 Canada   1987    26627.        1
+    ##  9 Canada   1992    26343.        1
+    ## 10 Canada   1997    28955.        1
+    ## 11 Canada   2002    33329.        1
+    ## 12 Canada   2007    36319.        1
+
+``` r
+#Distribution of gdp related with the Canadian one
+
+summary(my_gap$gdpRelaC)
+```
+
+    ##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    ## 0.007236 0.061648 0.171521 0.326659 0.446564 9.534690
+
+!!!!Remember: Trust No One. Including (especially?) yourself. Always try to find a way to check that you’ve done what meant to. Prepare to be horrified.
+========================================================================================================================================================
+
+Arrange function
+----------------
+
+``` r
+#Use arrange() to row-order data in a principled way
+#Example to arrange by year then country
+my_gap %>% arrange(year, country)
+```
+
+    ## # A tibble: 1,704 x 7
+    ##    country     continent  year lifeExp      pop gdpPercap gdpRelaC
+    ##    <fct>       <fct>     <int>   <dbl>    <int>     <dbl>    <dbl>
+    ##  1 Afghanistan Asia       1952    28.8  8425333      779.   0.0686
+    ##  2 Albania     Europe     1952    55.2  1282697     1601.   0.141 
+    ##  3 Algeria     Africa     1952    43.1  9279525     2449.   0.215 
+    ##  4 Angola      Africa     1952    30.0  4232095     3521.   0.310 
+    ##  5 Argentina   Americas   1952    62.5 17876956     5911.   0.520 
+    ##  6 Australia   Oceania    1952    69.1  8691212    10040.   0.883 
+    ##  7 Austria     Europe     1952    66.8  6927772     6137.   0.540 
+    ##  8 Bahrain     Asia       1952    50.9   120447     9867.   0.868 
+    ##  9 Bangladesh  Asia       1952    37.5 46886859      684.   0.0602
+    ## 10 Belgium     Europe     1952    68    8730405     8343.   0.734 
+    ## # … with 1,694 more rows
+
+``` r
+#Example to arrange by continent then country
+my_gap %>% arrange(continent, country)
+```
+
+    ## # A tibble: 1,704 x 7
+    ##    country continent  year lifeExp      pop gdpPercap gdpRelaC
+    ##    <fct>   <fct>     <int>   <dbl>    <int>     <dbl>    <dbl>
+    ##  1 Algeria Africa     1952    43.1  9279525     2449.    0.215
+    ##  2 Algeria Africa     1957    45.7 10270856     3014.    0.241
+    ##  3 Algeria Africa     1962    48.3 11000948     2551.    0.189
+    ##  4 Algeria Africa     1967    51.4 12760499     3247.    0.202
+    ##  5 Algeria Africa     1972    54.5 14760787     4183.    0.220
+    ##  6 Algeria Africa     1977    58.0 17152804     4910.    0.222
+    ##  7 Algeria Africa     1982    61.4 20033753     5745.    0.251
+    ##  8 Algeria Africa     1987    65.8 23254956     5681.    0.213
+    ##  9 Algeria Africa     1992    67.7 26298373     5023.    0.191
+    ## 10 Algeria Africa     1997    69.2 29072015     4797.    0.166
+    ## # … with 1,694 more rows
+
+``` r
+#example one year but sorted by life expectancy
+ my_gap %>% filter(year == 1952) %>% arrange(gdpPercap) %>% select(country, continent, year, gdpPercap)
+```
+
+    ## # A tibble: 142 x 4
+    ##    country           continent  year gdpPercap
+    ##    <fct>             <fct>     <int>     <dbl>
+    ##  1 Lesotho           Africa     1952      299.
+    ##  2 Guinea-Bissau     Africa     1952      300.
+    ##  3 Eritrea           Africa     1952      329.
+    ##  4 Myanmar           Asia       1952      331 
+    ##  5 Burundi           Africa     1952      339.
+    ##  6 Ethiopia          Africa     1952      362.
+    ##  7 Cambodia          Asia       1952      368.
+    ##  8 Malawi            Africa     1952      369.
+    ##  9 Equatorial Guinea Africa     1952      376.
+    ## 10 China             Asia       1952      400.
+    ## # … with 132 more rows
+
+``` r
+ #NOw in descending order for 2007
+ 
+ my_gap %>% filter(year == 2007) %>% arrange(desc(gdpPercap)) %>% select(country, continent, year, gdpPercap)
+```
+
+    ## # A tibble: 142 x 4
+    ##    country          continent  year gdpPercap
+    ##    <fct>            <fct>     <int>     <dbl>
+    ##  1 Norway           Europe     2007    49357.
+    ##  2 Kuwait           Asia       2007    47307.
+    ##  3 Singapore        Asia       2007    47143.
+    ##  4 United States    Americas   2007    42952.
+    ##  5 Ireland          Europe     2007    40676.
+    ##  6 Hong Kong, China Asia       2007    39725.
+    ##  7 Switzerland      Europe     2007    37506.
+    ##  8 Netherlands      Europe     2007    36798.
+    ##  9 Canada           Americas   2007    36319.
+    ## 10 Iceland          Europe     2007    36181.
+    ## # … with 132 more rows
+
+``` r
+ #"I advise that your analyses NEVER rely on rows or variables being in a specific order. But it’s still true that human beings write the code and the interactive development process can be much nicer if you reorder the rows of your data as you go along. Also, once you are preparing tables for human eyeballs, it is imperative that you step up and take control of row order."
+```
+
+Rename, Select, and Group by
+----------------------------
+
+``` r
+#camelCase Vs snake_case
+#Rename variables (not assigning!)
+
+my_gap %>% rename(life_exp = lifeExp,
+                  gdp_percap = gdpPercap,
+                  gdp_percap_rel = gdpRelaC)
+```
+
+    ## # A tibble: 1,704 x 7
+    ##    country     continent  year life_exp      pop gdp_percap gdp_percap_rel
+    ##    <fct>       <fct>     <int>    <dbl>    <int>      <dbl>          <dbl>
+    ##  1 Afghanistan Asia       1952     28.8  8425333       779.         0.0686
+    ##  2 Afghanistan Asia       1957     30.3  9240934       821.         0.0657
+    ##  3 Afghanistan Asia       1962     32.0 10267083       853.         0.0634
+    ##  4 Afghanistan Asia       1967     34.0 11537966       836.         0.0520
+    ##  5 Afghanistan Asia       1972     36.1 13079460       740.         0.0390
+    ##  6 Afghanistan Asia       1977     38.4 14880372       786.         0.0356
+    ##  7 Afghanistan Asia       1982     39.9 12881816       978.         0.0427
+    ##  8 Afghanistan Asia       1987     40.8 13867957       852.         0.0320
+    ##  9 Afghanistan Asia       1992     41.7 16317921       649.         0.0246
+    ## 10 Afghanistan Asia       1997     41.8 22227415       635.         0.0219
+    ## # … with 1,694 more rows
+
+``` r
+#select can rename and reposition 
+#select() can rename the variables you request to keep.
+#select() can be used with everything() to hoist a variable up to the front of the tibble.
+
+my_gap %>% 
+  filter(country == "Burundi", year > 1996) %>% 
+  select(yr = year, life_exp = lifeExp, gdp_Percap = gdpPercap) %>% 
+  select(gdp_Percap, everything())
+```
+
+    ## # A tibble: 3 x 3
+    ##   gdp_Percap    yr life_exp
+    ##        <dbl> <int>    <dbl>
+    ## 1       463.  1997     45.3
+    ## 2       446.  2002     47.4
+    ## 3       430.  2007     49.6
+
+``` r
+#Counting things up
+
+my_gap %>% 
+  group_by(continent) %>% 
+  summarize(n = n())
+```
+
+    ## # A tibble: 5 x 2
+    ##   continent     n
+    ##   <fct>     <int>
+    ## 1 Africa      624
+    ## 2 Americas    300
+    ## 3 Asia        396
+    ## 4 Europe      360
+    ## 5 Oceania      24
+
+``` r
+#Same info as R base table() but issues with computing
+
+table(my_gap$continent)
+```
+
+    ## 
+    ##   Africa Americas     Asia   Europe  Oceania 
+    ##      624      300      396      360       24
+
+``` r
+#tally() counts rows
+
+my_gap %>% 
+  group_by(continent) %>% 
+  tally()
+```
+
+    ## # A tibble: 5 x 2
+    ##   continent     n
+    ##   <fct>     <int>
+    ## 1 Africa      624
+    ## 2 Americas    300
+    ## 3 Asia        396
+    ## 4 Europe      360
+    ## 5 Oceania      24
+
+``` r
+#The count() function is an even more convenient function that does both grouping and counting.
+
+my_gap %>% 
+  count(continent) 
+```
+
+    ## # A tibble: 5 x 2
+    ##   continent     n
+    ##   <fct>     <int>
+    ## 1 Africa      624
+    ## 2 Americas    300
+    ## 3 Asia        396
+    ## 4 Europe      360
+    ## 5 Oceania      24
+
+``` r
+#Use the n_distinct() function to count the number of distinct countries within each continent.
+
+my_gap %>% 
+  group_by(continent) %>% 
+  summarize(n = n(),
+            n_countries = n_distinct(country))
+```
+
+    ## # A tibble: 5 x 3
+    ##   continent     n n_countries
+    ##   <fct>     <int>       <int>
+    ## 1 Africa      624          52
+    ## 2 Americas    300          25
+    ## 3 Asia        396          33
+    ## 4 Europe      360          30
+    ## 5 Oceania      24           2
+
+### TO DO 7.8.2 General summarization
 
 ![](Chapter7_files/figure-markdown_github/pressure-1.png)
 
