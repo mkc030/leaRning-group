@@ -119,10 +119,71 @@ my_gap %>%
   summarize(n = n(),
             n_countries = n_distinct(country))
 
+#general summarization
+my_gap %>% 
+  group_by(continent) %>% 
+  summarize(avg_lifeExp = mean(lifeExp))
+
+#using summarize at (applies several functions)
+
+my_gap %>% 
+  filter(year %in% c(1952,2007)) %>% 
+  group_by(continent, year) %>% 
+  summarize_at(vars(lifeExp,gdpPercap), list(~mean(.), ~median(.), ~sd(.)))
+
+# Minimun and maximun lifeExp seen by year. In Asia
+
+my_gap %>% 
+  filter(continent == "Asia") %>% 
+  group_by(year) %>% 
+  summarize(lifeExpmin = min(lifeExp), lifeExpmax = max(lifeExp))
+
 
 ```
 
-###TO DO 7.8.2 General summarization
+##GROUP MUTATE
+```{r GroupMutate}
+#computing with group-wise summaries
+#EXample, year of life exp gained relative to 1952 per country.
+
+my_gap %>% 
+  group_by(country) %>% 
+  select(country, year, lifeExp) %>% 
+  mutate(lifeExp_gain = lifeExp - first(lifeExp)) %>% 
+  filter(year < 1963, year > 1952)
+  
+#Windows functions
+#ASi worst and best in Life exp, but retaining infor countries
+
+my_gap %>% 
+  filter(continent =="Asia") %>% 
+  select(year, country, lifeExp) %>%   
+  group_by(year) %>% 
+  filter(min_rank(desc(lifeExp)) < 2 | min_rank(lifeExp) < 2) %>% 
+    arrange(year) %>% 
+    print(n=Inf)
+    
+```
+
+```{r GrandFinale}
+#Sharpest drop lifeExp in 5 years , By continent
+
+my_gap %>% 
+  select(country, year, continent, lifeExp) %>% 
+  group_by(continent, country) %>%
+  ## within country, take (lifeExp in year i) - (lifeExp in year i - 1)
+  ## positive means lifeExp went up, negative means it went down
+  mutate(le_delta = lifeExp - lag(lifeExp)) %>% 
+  ## within country, retain the worst lifeExp change = smallest or most negative
+  summarize(worst_le_delta = min(le_delta, na.rm =TRUE)) %>% 
+  ## within continent, retain the row with the lowest worst_le_delta
+   #In this case the top(-2) indicates to take two min values of the variable. 
+  top_n(-2, wt = worst_le_delta) %>% 
+arrange(worst_le_delta)
+  
+
+
+```
 
 
 ```{r pressure, echo=FALSE}

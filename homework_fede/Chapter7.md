@@ -10,14 +10,14 @@ Loading Libraries
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
+    ## ── Attaching packages ────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
 
     ## ✔ ggplot2 3.2.1     ✔ purrr   0.3.3
     ## ✔ tibble  2.1.3     ✔ dplyr   0.8.3
     ## ✔ tidyr   1.0.0     ✔ stringr 1.4.0
     ## ✔ readr   1.3.1     ✔ forcats 0.4.0
 
-    ## ── Conflicts ───────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ───────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -329,7 +329,175 @@ my_gap %>%
     ## 4 Europe      360          30
     ## 5 Oceania      24           2
 
-### TO DO 7.8.2 General summarization
+``` r
+#general summarization
+my_gap %>% 
+  group_by(continent) %>% 
+  summarize(avg_lifeExp = mean(lifeExp))
+```
+
+    ## # A tibble: 5 x 2
+    ##   continent avg_lifeExp
+    ##   <fct>           <dbl>
+    ## 1 Africa           48.9
+    ## 2 Americas         64.7
+    ## 3 Asia             60.1
+    ## 4 Europe           71.9
+    ## 5 Oceania          74.3
+
+``` r
+#using summarize at (applies several functions)
+
+my_gap %>% 
+  filter(year %in% c(1952,2007)) %>% 
+  group_by(continent, year) %>% 
+  summarize_at(vars(lifeExp,gdpPercap), list(~mean(.), ~median(.), ~sd(.)))
+```
+
+    ## # A tibble: 10 x 8
+    ## # Groups:   continent [5]
+    ##    continent  year lifeExp_mean gdpPercap_mean lifeExp_median gdpPercap_median
+    ##    <fct>     <int>        <dbl>          <dbl>          <dbl>            <dbl>
+    ##  1 Africa     1952         39.1          1253.           38.8             987.
+    ##  2 Africa     2007         54.8          3089.           52.9            1452.
+    ##  3 Americas   1952         53.3          4079.           54.7            3048.
+    ##  4 Americas   2007         73.6         11003.           72.9            8948.
+    ##  5 Asia       1952         46.3          5195.           44.9            1207.
+    ##  6 Asia       2007         70.7         12473.           72.4            4471.
+    ##  7 Europe     1952         64.4          5661.           65.9            5142.
+    ##  8 Europe     2007         77.6         25054.           78.6           28054.
+    ##  9 Oceania    1952         69.3         10298.           69.3           10298.
+    ## 10 Oceania    2007         80.7         29810.           80.7           29810.
+    ## # … with 2 more variables: lifeExp_sd <dbl>, gdpPercap_sd <dbl>
+
+``` r
+# Minimun and maximun lifeExp seen by year. In Asia
+
+my_gap %>% 
+  filter(continent == "Asia") %>% 
+  group_by(year) %>% 
+  summarize(lifeExpmin = min(lifeExp), lifeExpmax = max(lifeExp))
+```
+
+    ## # A tibble: 12 x 3
+    ##     year lifeExpmin lifeExpmax
+    ##    <int>      <dbl>      <dbl>
+    ##  1  1952       28.8       65.4
+    ##  2  1957       30.3       67.8
+    ##  3  1962       32.0       69.4
+    ##  4  1967       34.0       71.4
+    ##  5  1972       36.1       73.4
+    ##  6  1977       31.2       75.4
+    ##  7  1982       39.9       77.1
+    ##  8  1987       40.8       78.7
+    ##  9  1992       41.7       79.4
+    ## 10  1997       41.8       80.7
+    ## 11  2002       42.1       82  
+    ## 12  2007       43.8       82.6
+
+GROUP MUTATE
+------------
+
+``` r
+#computing with group-wise summaries
+#EXample, year of life exp gained relative to 1952 per country.
+
+my_gap %>% 
+  group_by(country) %>% 
+  select(country, year, lifeExp) %>% 
+  mutate(lifeExp_gain = lifeExp - first(lifeExp)) %>% 
+  filter(year < 1963, year > 1952)
+```
+
+    ## # A tibble: 284 x 4
+    ## # Groups:   country [142]
+    ##    country      year lifeExp lifeExp_gain
+    ##    <fct>       <int>   <dbl>        <dbl>
+    ##  1 Afghanistan  1957    30.3         1.53
+    ##  2 Afghanistan  1962    32.0         3.20
+    ##  3 Albania      1957    59.3         4.05
+    ##  4 Albania      1962    64.8         9.59
+    ##  5 Algeria      1957    45.7         2.61
+    ##  6 Algeria      1962    48.3         5.23
+    ##  7 Angola       1957    32.0         1.98
+    ##  8 Angola       1962    34           3.98
+    ##  9 Argentina    1957    64.4         1.91
+    ## 10 Argentina    1962    65.1         2.66
+    ## # … with 274 more rows
+
+``` r
+#Windows functions
+#ASi worst and best in Life exp, but retaining infor countries
+
+my_gap %>% 
+  filter(continent =="Asia") %>% 
+  select(year, country, lifeExp) %>%   
+  group_by(year) %>% 
+  filter(min_rank(desc(lifeExp)) < 2 | min_rank(lifeExp) < 2) %>% 
+    arrange(year) %>% 
+    print(n=Inf)
+```
+
+    ## # A tibble: 24 x 3
+    ## # Groups:   year [12]
+    ##     year country     lifeExp
+    ##    <int> <fct>         <dbl>
+    ##  1  1952 Afghanistan    28.8
+    ##  2  1952 Israel         65.4
+    ##  3  1957 Afghanistan    30.3
+    ##  4  1957 Israel         67.8
+    ##  5  1962 Afghanistan    32.0
+    ##  6  1962 Israel         69.4
+    ##  7  1967 Afghanistan    34.0
+    ##  8  1967 Japan          71.4
+    ##  9  1972 Afghanistan    36.1
+    ## 10  1972 Japan          73.4
+    ## 11  1977 Cambodia       31.2
+    ## 12  1977 Japan          75.4
+    ## 13  1982 Afghanistan    39.9
+    ## 14  1982 Japan          77.1
+    ## 15  1987 Afghanistan    40.8
+    ## 16  1987 Japan          78.7
+    ## 17  1992 Afghanistan    41.7
+    ## 18  1992 Japan          79.4
+    ## 19  1997 Afghanistan    41.8
+    ## 20  1997 Japan          80.7
+    ## 21  2002 Afghanistan    42.1
+    ## 22  2002 Japan          82  
+    ## 23  2007 Afghanistan    43.8
+    ## 24  2007 Japan          82.6
+
+``` r
+#Sharpest drop lifeExp in 5 years , By continent
+
+my_gap %>% 
+  select(country, year, continent, lifeExp) %>% 
+  group_by(continent, country) %>%
+  ## within country, take (lifeExp in year i) - (lifeExp in year i - 1)
+  ## positive means lifeExp went up, negative means it went down
+  mutate(le_delta = lifeExp - lag(lifeExp)) %>% 
+  ## within country, retain the worst lifeExp change = smallest or most negative
+  summarize(worst_le_delta = min(le_delta, na.rm =TRUE)) %>% 
+  ## within continent, retain the row with the lowest worst_le_delta
+   #In this case the top(-2) indicates to take two min values of the variable. 
+  top_n(-2, wt = worst_le_delta) %>% 
+arrange(worst_le_delta)
+```
+
+    ## # A tibble: 10 x 3
+    ## # Groups:   continent [5]
+    ##    continent country     worst_le_delta
+    ##    <fct>     <fct>                <dbl>
+    ##  1 Africa    Rwanda             -20.4  
+    ##  2 Africa    Zimbabwe           -13.6  
+    ##  3 Asia      Cambodia            -9.10 
+    ##  4 Asia      China               -6.05 
+    ##  5 Americas  El Salvador         -1.51 
+    ##  6 Europe    Montenegro          -1.46 
+    ##  7 Europe    Bulgaria            -0.87 
+    ##  8 Americas  Puerto Rico         -0.719
+    ##  9 Oceania   Australia            0.170
+    ## 10 Oceania   New Zealand          0.28
 
 ![](Chapter7_files/figure-markdown_github/pressure-1.png)
 
