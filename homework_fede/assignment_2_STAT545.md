@@ -80,7 +80,7 @@ mi_gap %>% filter(country %in% c("Colombia", "Venezuela", "Ecuador"), year %in% 
   mi_gap %>% select(continent, country, year, lifeExp) %>% 
   group_by(country) %>%  
   mutate(drop = lifeExp- lag(lifeExp)) %>% 
-   filter(drop < 0) 
+   filter(drop < 0)
 ```
 
     ## # A tibble: 102 x 5
@@ -98,6 +98,45 @@ mi_gap %>% filter(country %in% c("Colombia", "Venezuela", "Ecuador"), year %in% 
     ##  9 Europe    Bulgaria  1997    70.3  -0.87 
     ## 10 Africa    Burundi   1992    44.7  -3.48 
     ## # … with 92 more rows
+
+``` r
+#Not sure how to use it using diff()
+```
+
+#### 1.4a Filter gapminder so that it shows the max GDP per capita experienced by each country. Hint: you might find the max() function useful here
+
+``` r
+mi_gap %>% 
+  group_by(country) %>% 
+  summarize(maxGDP = max(gdpPercap))
+```
+
+    ## # A tibble: 142 x 2
+    ##    country     maxGDP
+    ##    <fct>        <dbl>
+    ##  1 Afghanistan   978.
+    ##  2 Albania      5937.
+    ##  3 Algeria      6223.
+    ##  4 Angola       5523.
+    ##  5 Argentina   12779.
+    ##  6 Australia   34435.
+    ##  7 Austria     36126.
+    ##  8 Bahrain     29796.
+    ##  9 Bangladesh   1391.
+    ## 10 Belgium     33693.
+    ## # … with 132 more rows
+
+``` r
+ #Not sure how to keep the year!
+```
+
+#### 1.4b Filter gapminder to contain six rows: the rows with the three largest GDP per capita, and the rows with the three smallest GDP per capita. Be sure to not create any intermediate objects when doing this (with, for example, the assignment operator). Hint: you might find the sort() function useful, or perhaps even the dplyr::slice() function.
+
+``` r
+#mi_gap %>% select(country, year, gdpPercap) %>% 
+ # group_by(country) %>% 
+  #summarize(sort(gdpPercap))
+```
 
 Including Plots
 ---------------
