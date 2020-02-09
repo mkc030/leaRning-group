@@ -7,14 +7,14 @@ February 5, 2020
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
+    ## ── Attaching packages ───────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
 
     ## ✔ ggplot2 3.2.1     ✔ purrr   0.3.3
     ## ✔ tibble  2.1.3     ✔ dplyr   0.8.3
     ## ✔ tidyr   1.0.0     ✔ stringr 1.4.0
     ## ✔ readr   1.3.1     ✔ forcats 0.4.0
 
-    ## ── Conflicts ───────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ──────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -133,10 +133,20 @@ mi_gap %>%
 #### 1.4b Filter gapminder to contain six rows: the rows with the three largest GDP per capita, and the rows with the three smallest GDP per capita. Be sure to not create any intermediate objects when doing this (with, for example, the assignment operator). Hint: you might find the sort() function useful, or perhaps even the dplyr::slice() function.
 
 ``` r
-#mi_gap %>% select(country, year, gdpPercap) %>% 
- # group_by(country) %>% 
-  #summarize(sort(gdpPercap))
+mi_gap %>% select(country, year, gdpPercap) %>% 
+filter(min_rank(gdpPercap) <=3 | min_rank(desc(gdpPercap)) <=3) %>%                 
+arrange(gdpPercap)  
 ```
+
+    ## # A tibble: 6 x 3
+    ##   country           year gdpPercap
+    ##   <fct>            <int>     <dbl>
+    ## 1 Congo, Dem. Rep.  2002      241.
+    ## 2 Congo, Dem. Rep.  2007      278.
+    ## 3 Lesotho           1952      299.
+    ## 4 Kuwait            1952   108382.
+    ## 5 Kuwait            1972   109348.
+    ## 6 Kuwait            1957   113523.
 
 Including Plots
 ---------------

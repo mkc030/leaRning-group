@@ -52,9 +52,10 @@ mi_gap %>%
 ####1.4b Filter gapminder to contain six rows: the rows with the three largest GDP per capita, and the rows with the three smallest GDP per capita. Be sure to not create any intermediate objects when doing this (with, for example, the assignment operator). Hint: you might find the sort() function useful, or perhaps even the dplyr::slice() function.
 
 ```{r 6rows}
-#mi_gap %>% select(country, year, gdpPercap) %>% 
- # group_by(country) %>% 
-  #summarize(sort(gdpPercap))
+mi_gap %>% select(country, year, gdpPercap) %>% 
+filter(min_rank(gdpPercap) <=3 | min_rank(desc(gdpPercap)) <=3) %>%                 
+arrange(gdpPercap)  
+
 
 ```
 
