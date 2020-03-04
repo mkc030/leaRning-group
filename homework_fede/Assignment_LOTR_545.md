@@ -60,29 +60,43 @@ male <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "dat
 ``` r
 lord_bind_MF <- bind_rows(female, male)
 
-lord_bind_MF %>% pivot_longer(cols = c(Elf, Hobbit, Man), names_to = "Race", values_to = "Words") %>% 
+lord_tidy2 <- lord_bind_MF %>% pivot_longer(cols = c(Elf, Hobbit, Man), names_to = "Race", values_to = "Words") %>% 
                 select(Film, Race, Gender, Words) %>% 
                 arrange(Film, Race, Gender)
 ```
 
-    ## # A tibble: 18 x 4
-    ##    Film                       Race   Gender Words
-    ##    <chr>                      <chr>  <chr>  <dbl>
-    ##  1 The Fellowship Of The Ring Elf    Female  1229
-    ##  2 The Fellowship Of The Ring Elf    Male     971
-    ##  3 The Fellowship Of The Ring Hobbit Female    14
-    ##  4 The Fellowship Of The Ring Hobbit Male    3644
-    ##  5 The Fellowship Of The Ring Man    Female     0
-    ##  6 The Fellowship Of The Ring Man    Male    1995
-    ##  7 The Return Of The King     Elf    Female   183
-    ##  8 The Return Of The King     Elf    Male     510
-    ##  9 The Return Of The King     Hobbit Female     2
-    ## 10 The Return Of The King     Hobbit Male    2673
-    ## 11 The Return Of The King     Man    Female   268
-    ## 12 The Return Of The King     Man    Male    2459
-    ## 13 The Two Towers             Elf    Female   331
-    ## 14 The Two Towers             Elf    Male     513
-    ## 15 The Two Towers             Hobbit Female     0
-    ## 16 The Two Towers             Hobbit Male    2463
-    ## 17 The Two Towers             Man    Female   401
-    ## 18 The Two Towers             Man    Male    3589
+``` r
+lord_tidy2 %>% pivot_wider(names_from = Race, values_from = Words )
+```
+
+    ## # A tibble: 6 x 5
+    ##   Film                       Gender   Elf Hobbit   Man
+    ##   <chr>                      <chr>  <dbl>  <dbl> <dbl>
+    ## 1 The Fellowship Of The Ring Female  1229     14     0
+    ## 2 The Fellowship Of The Ring Male     971   3644  1995
+    ## 3 The Return Of The King     Female   183      2   268
+    ## 4 The Return Of The King     Male     510   2673  2459
+    ## 5 The Two Towers             Female   331      0   401
+    ## 6 The Two Towers             Male     513   2463  3589
+
+``` r
+lord_tidy2 %>% pivot_wider(names_from = Gender, values_from = Words )
+```
+
+    ## # A tibble: 9 x 4
+    ##   Film                       Race   Female  Male
+    ##   <chr>                      <chr>   <dbl> <dbl>
+    ## 1 The Fellowship Of The Ring Elf      1229   971
+    ## 2 The Fellowship Of The Ring Hobbit     14  3644
+    ## 3 The Fellowship Of The Ring Man         0  1995
+    ## 4 The Return Of The King     Elf       183   510
+    ## 5 The Return Of The King     Hobbit      2  2673
+    ## 6 The Return Of The King     Man       268  2459
+    ## 7 The Two Towers             Elf       331   513
+    ## 8 The Two Towers             Hobbit      0  2463
+    ## 9 The Two Towers             Man       401  3589
+
+``` r
+lord_unite <- lord_tidy2 %>% unite("Race_Gender", Race, Gender) %>% 
+  pivot_wider(names_from = Race_Gender, values_from = Words )
+```

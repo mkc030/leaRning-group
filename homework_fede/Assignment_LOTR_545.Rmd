@@ -72,14 +72,25 @@ male <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "dat
 
 lord_bind_MF <- bind_rows(female, male)
 
-lord_bind_MF %>% pivot_longer(cols = c(Elf, Hobbit, Man), names_to = "Race", values_to = "Words") %>% 
+lord_tidy2 <- lord_bind_MF %>% pivot_longer(cols = c(Elf, Hobbit, Man), names_to = "Race", values_to = "Words") %>% 
                 select(Film, Race, Gender, Words) %>% 
                 arrange(Film, Race, Gender)
 
 ```
 
 
+```{r spreadORpivot_wider}
 
+lord_tidy2 %>% pivot_wider(names_from = Race, values_from = Words )
+
+lord_tidy2 %>% pivot_wider(names_from = Gender, values_from = Words )
+
+lord_unite <- lord_tidy2 %>% unite("Race_Gender", Race, Gender) %>% 
+  pivot_wider(names_from = Race_Gender, values_from = Words )
+
+
+
+```
 
 
 
