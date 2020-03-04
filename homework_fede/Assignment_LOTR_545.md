@@ -18,11 +18,51 @@ str(lord_untidy)
     ##  $ Female: num  1229 14 0 331 0 ...
     ##  $ Male  : num  971 3644 1995 513 2463 ...
 
-### Tiddy untidy data set
+### Tiddy untidy data set. I used pivot\_longer as it was recommended. More functionaluity
 
 ``` r
-lord_untidy %>% pivot_longer(cols = c(Female, Male), names_to = "Gender", values_to = "Words") %>% 
+lord_tidy <- lord_untidy %>% pivot_longer(cols = c(Female, Male), names_to = "Gender", values_to = "Words") %>% 
   arrange(Film, Race, Gender)
+```
+
+``` r
+write_csv(lord_tidy, "lotr_tidy2.csv")
+```
+
+### Exercises Female and Male databases
+
+``` r
+female <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "data", "Female.csv"))
+```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   Gender = col_character(),
+    ##   Film = col_character(),
+    ##   Elf = col_double(),
+    ##   Hobbit = col_double(),
+    ##   Man = col_double()
+    ## )
+
+``` r
+male <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "data", "Male.csv")) 
+```
+
+    ## Parsed with column specification:
+    ## cols(
+    ##   Gender = col_character(),
+    ##   Film = col_character(),
+    ##   Elf = col_double(),
+    ##   Hobbit = col_double(),
+    ##   Man = col_double()
+    ## )
+
+``` r
+lord_bind_MF <- bind_rows(female, male)
+
+lord_bind_MF %>% pivot_longer(cols = c(Elf, Hobbit, Man), names_to = "Race", values_to = "Words") %>% 
+                select(Film, Race, Gender, Words) %>% 
+                arrange(Film, Race, Gender)
 ```
 
     ## # A tibble: 18 x 4
@@ -46,5 +86,3 @@ lord_untidy %>% pivot_longer(cols = c(Female, Male), names_to = "Gender", values
     ## 16 The Two Towers             Hobbit Male    2463
     ## 17 The Two Towers             Man    Female   401
     ## 18 The Two Towers             Man    Male    3589
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

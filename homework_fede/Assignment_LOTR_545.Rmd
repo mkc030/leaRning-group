@@ -57,8 +57,29 @@ lord_tidy <- lord_untidy %>% pivot_longer(cols = c(Female, Male), names_to = "Ge
 
 ```{r write}
 
-write_csv(lord_tidy, file.path("homework_fede", "lotr_tidy.csv"))
-
+write_csv(lord_tidy, "lotr_tidy2.csv")
 
 ```
+
+###Exercises Female and Male databases
+
+```{r tidyFemaleMAle}
+female <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "data", "Female.csv"))
+
+
+male <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "data", "Male.csv")) 
+
+
+lord_bind_MF <- bind_rows(female, male)
+
+lord_bind_MF %>% pivot_longer(cols = c(Elf, Hobbit, Man), names_to = "Race", values_to = "Words") %>% 
+                select(Film, Race, Gender, Words) %>% 
+                arrange(Film, Race, Gender)
+
+```
+
+
+
+
+
 
