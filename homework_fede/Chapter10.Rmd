@@ -78,12 +78,10 @@ nlevels(gap_Lessdrop$continent)
  
 # using fct_drop() inside mutate() NOT WORKING
 
-gap_lessfct <- gapminder %>% mutate(countryless1qrt = pop < 250000, fct_drop(country)) %>% 
-   filter(countryless1qrt == TRUE) %>% 
+#gap_lessfct <- gapminder %>% mutate(countryless1qrt = pop < 250000, fct_drop(country)) %>% 
+ #  filter(countryless1qrt == TRUE) %>% 
    
-nlevels(gap_lessfct$country)
-
-
+#nlevels(gap_lessfct$country)
 
 ```
 

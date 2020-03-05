@@ -112,18 +112,27 @@ nlevels(gapminder$continent)
     ## [1] 5
 
 ``` r
-gap_Less1qrt <- gapminder %>% filter(pop < 250000) %>% 
+#using droplevels()
+gap_Lessdrop <- gapminder %>% filter(pop < 250000) %>% 
                               droplevels()  
-
-nlevels(gap_Less1qrt$country)
+nlevels(gap_Lessdrop$country)
 ```
 
     ## [1] 7
 
 ``` r
-nlevels(gap_Less1qrt$continent)            
+nlevels(gap_Lessdrop$continent)            
 ```
 
     ## [1] 3
+
+``` r
+# using fct_drop() inside mutate() NOT WORKING
+
+#gap_lessfct <- gapminder %>% mutate(countryless1qrt = pop < 250000, fct_drop(country)) %>% 
+ #  filter(countryless1qrt == TRUE) %>% 
+   
+#nlevels(gap_lessfct$country)
+```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
