@@ -213,7 +213,101 @@ i_gap$country %>% fct_recode("Chimbchombianos" = "Colombia", "Merito" = "Mexico"
 Exercise: Isolate the data for "Australia", "Korea, Dem. Rep.", and "Korea, Rep." in the 2000x. Revalue the country factor levels to "Oz", "North Korea", and "South Korea".
 
 ``` r
-#i_gap <- gapminder %>% filter(country %in% c("Colombia", "Ecuador", "Chile", "Mexico", "Argentina")) %>% droplevels()
+Revalue_gap <- gapminder %>% filter(country %in% c("Australia", "Korea, Dem. Rep.", "Korea, Rep."), year >= 2000) %>% droplevels()
 
-#i_gap$country %>% fct_recode("Chimbchombianos" = "Colombia", "Merito" = "Mexico") %>% levels()
+Revalue_gap$country %>% fct_recode("Oz" = "Australia", "North Korea" = "Korea, Dem. Rep.", "South Korea" = "Korea, Rep.") %>% levels()
 ```
+
+    ## [1] "Oz"          "North Korea" "South Korea"
+
+``` r
+Revalue_gap
+```
+
+    ## # A tibble: 6 x 6
+    ##   country          continent  year lifeExp      pop gdpPercap
+    ##   <fct>            <fct>     <int>   <dbl>    <int>     <dbl>
+    ## 1 Australia        Oceania    2002    80.4 19546792    30688.
+    ## 2 Australia        Oceania    2007    81.2 20434176    34435.
+    ## 3 Korea, Dem. Rep. Asia       2002    66.7 22215365     1647.
+    ## 4 Korea, Dem. Rep. Asia       2007    67.3 23301725     1593.
+    ## 5 Korea, Rep.      Asia       2002    77.0 47969150    19234.
+    ## 6 Korea, Rep.      Asia       2007    78.6 49044790    23348.
+
+Let’s create two data frames, each with data from two countries, dropping unused factor levels.
+
+``` r
+df1 <- gapminder %>% filter(country %in% c("Colombia", "South Africa"), year >= 2000) %>%
+                    droplevels()
+
+df2 <- gapminder %>% filter(country %in% c("Canada", "Peru"), year  >= 2000) %>% 
+                      droplevels()
+
+nlevels(df1$country)
+```
+
+    ## [1] 2
+
+``` r
+nlevels(df2$country)
+```
+
+    ## [1] 2
+
+Combining the levels using fct\_c(). And exploring different forms of row binding
+
+``` r
+fct_c(df1$country, df2$country)
+```
+
+    ## [1] Colombia     Colombia     South Africa South Africa Canada      
+    ## [6] Canada       Peru         Peru        
+    ## Levels: Colombia South Africa Canada Peru
+
+``` r
+bind_rows(df1, df2)
+```
+
+    ## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character
+
+    ## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+    ## into character vector
+
+    ## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+    ## into character vector
+
+    ## Warning in bind_rows_(x, .id): Unequal factor levels: coercing to character
+
+    ## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+    ## into character vector
+
+    ## Warning in bind_rows_(x, .id): binding character and factor vector, coercing
+    ## into character vector
+
+    ## # A tibble: 8 x 6
+    ##   country      continent  year lifeExp      pop gdpPercap
+    ##   <chr>        <chr>     <int>   <dbl>    <int>     <dbl>
+    ## 1 Colombia     Americas   2002    71.7 41008227     5755.
+    ## 2 Colombia     Americas   2007    72.9 44227550     7007.
+    ## 3 South Africa Africa     2002    53.4 44433622     7711.
+    ## 4 South Africa Africa     2007    49.3 43997828     9270.
+    ## 5 Canada       Americas   2002    79.8 31902268    33329.
+    ## 6 Canada       Americas   2007    80.7 33390141    36319.
+    ## 7 Peru         Americas   2002    69.9 26769436     5909.
+    ## 8 Peru         Americas   2007    71.4 28674757     7409.
+
+``` r
+rbind(df1, df2)
+```
+
+    ## # A tibble: 8 x 6
+    ##   country      continent  year lifeExp      pop gdpPercap
+    ##   <fct>        <fct>     <int>   <dbl>    <int>     <dbl>
+    ## 1 Colombia     Americas   2002    71.7 41008227     5755.
+    ## 2 Colombia     Americas   2007    72.9 44227550     7007.
+    ## 3 South Africa Africa     2002    53.4 44433622     7711.
+    ## 4 South Africa Africa     2007    49.3 43997828     9270.
+    ## 5 Canada       Americas   2002    79.8 31902268    33329.
+    ## 6 Canada       Americas   2007    80.7 33390141    36319.
+    ## 7 Peru         Americas   2002    69.9 26769436     5909.
+    ## 8 Peru         Americas   2007    71.4 28674757     7409.

@@ -162,10 +162,39 @@ Exercise: Isolate the data for "Australia", "Korea, Dem. Rep.", and "Korea, Rep.
 
 ```{r exerciselevels}
 
-#i_gap <- gapminder %>% filter(country %in% c("Colombia", "Ecuador", "Chile", "Mexico", "Argentina")) %>% droplevels()
+Revalue_gap <- gapminder %>% filter(country %in% c("Australia", "Korea, Dem. Rep.", "Korea, Rep."), year >= 2000) %>% droplevels()
 
-#i_gap$country %>% fct_recode("Chimbchombianos" = "Colombia", "Merito" = "Mexico") %>% levels()
+Revalue_gap$country %>% fct_recode("Oz" = "Australia", "North Korea" = "Korea, Dem. Rep.", "South Korea" = "Korea, Rep.") %>% levels()
+Revalue_gap
 
 ```
+
+Let’s create two data frames, each with data from two countries, dropping unused factor levels.
+
+```{r gRowaFactor}
+
+df1 <- gapminder %>% filter(country %in% c("Colombia", "South Africa"), year >= 2000) %>%
+                    droplevels()
+
+df2 <- gapminder %>% filter(country %in% c("Canada", "Peru"), year  >= 2000) %>% 
+                      droplevels()
+
+nlevels(df1$country)
+nlevels(df2$country)
+
+
+```
+Combining the levels using fct_c(). And exploring different forms of row binding
+
+```{r combining}
+fct_c(df1$country, df2$country)
+
+bind_rows(df1, df2)
+
+rbind(df1, df2)
+
+```
+
+
 
 
