@@ -14,7 +14,7 @@ options(digits=3)
 ## Useful R and related references
 
 ### Overleaf
-This is an online LaTeX writing and publishing tool, and has different modes depending on your expertise level with LaTeX. https://www.overleaf.com/for/authors Free for personal use :) 
+This is an online LaTeX writing and publishing tool, and has different modes depending on your expertise level with LaTeX. https://www.overleaf.com/for/authors Free for personal use :) It does however, only generate a PDF rather than a word doc, which can be an issue for submitting to certain journals.
 
 ## Useful math and summarizing functions
 

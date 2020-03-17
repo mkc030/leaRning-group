@@ -1,0 +1,130 @@
+---
+title: "Notes on Data Analysis chapters from stat545.com"
+output: html_document:
+  keep_md: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Overview of document
+This doc is Michelle's notes on useful tips and tricks gleaned the 'Data Analysis' section of Jenny Bryan's stat545 website. [go to stat545](https://stat545.com/basic-data-care.html) 
+
+## Chapters 5 to 8 - Intro to dplyr
+I have skimmed over and ignored most of the intro stuff, but the most useful section I found was on tidying the LOTR datasets using the older `gather` and `spread` functions and the newer `pivot` functions.
+
+### Shortcuts
+Typing a command in parentheses will automatically print the object/command to the console.
+
+Assignment operator (think "gets" when you see the arrow) for mac is: option + dash
+
+Pipe operator (think "then" when you see the symbol) for mac is: command + shift + m
+
+### Import data and packages
+```{r import, echo=FALSE}
+library(tidyverse)
+library(fs)
+
+fellow <- read_csv("data/The_Fellowship_Of_The_Ring.csv")
+tower <- read_csv("data/The_Two_Towers.csv")
+king <- read_csv("data/The_Return_Of_The_King.csv")
+```
+
+### Untidy lotr data
+```{r untidy the data}
+lotr_untidy <- bind_rows(fellow, tower, king)
+str(lotr_untidy)
+```
+
+### Tidy the untidy data
+#### Use the old function - gather() 
+This function is no longer recommended for use, but as there are many examples with it, let's use this to compare to the newer version of the same function.
+
+Note here that adding the two variables at the end ('Female' and 'Male') specifies the two columns that are gathered together into two new columns. If you forget to add these, the function defaults to gathering the first two columns in the dataframe. Not helpful in this case!!! 
+
+The first new column *(column name specified using* `key = `*)* is filled by the column names from the original dataset (eg "Female" and "Male" in this case). 
+
+The second new column *(column name specified using* `value = `*)* is filled by the cell values contained within the two gathered columns (eg the numbers representing word count in this case).
+
+```{r tidy the untidy with gather}
+lotr_tidy <- gather(lotr_untidy,
+                    key = "Gender",
+                    value = "Words",
+                    Female, Male)
+```
+
+#### Use the new tidyverse function - `pivot_longer()` 
+This function replaces gather—*and conversly,* `pivot_wider()` *replaces* `spread()`. See `vignette("pivot")` for details, but in essence: 
+
+* the first argument is the dataset, 
+* the second argument is the columns to be reshaped, 
+`names_to` gives the new column name containing values based on the old column names *(eg gender in our case)*, and 
+* `values_to` gives the new column name for the old cell values *(eg word count in our case)*.
+
+The advantage of the new pivot functions are that they can also be used with different datatypes being used as column names (eg dates, numeric data, many variables in one column name, etc), it can drop rows containing NAs in the old cell values, and allows for some additional data maninpulation directly within the pivot function. See vignette for more details. It is really good.
+```{r tidy the untidy with pivot_longer}
+lotr_pivtidy <- lotr_untidy %>% 
+                    pivot_longer(cols = c("Female", "Male"),
+                                 names_to = "Gender",
+                                 values_to = "Words")
+identical(lotr_pivtidy, lotr_tidy) #Hmmm this is false, but maybe just because of different order?
+(d <- setdiff(lotr_pivtidy, lotr_tidy)) #Yes! Returns zero rows different in pivot tidy than tidy
+(d <- setdiff(lotr_tidy, lotr_pivtidy)) #Also zero rows different in tidy than in pivot tidy. Excellent!
+```
+
+
+### Chapter 9 - Reading and Writing files
+
+#### Reading files
+Jenny's advice: use the built-in arguments for data importation to do as much data wrangling during import as possible, rather than coding it all in post-import. Read the vignette on column types.
+```{r Intro to readr}
+vignette("readr")
+```
+
+My only thought is that importing as is and then fussing later allows you to do data exploration and get a feel for what is in your dataset, prior to automatically converting, as R might fail silently. So maybe it depends on how familiar you are with the data and/or if you are using testing functions to see if there are unexpected things that come up during the import (i.e. dates or numbers out of range, something getting converted to an NA which shouldn't be, etc).
+
+Note that the `forcats` package is used in dealing with factors, eg reording factor levels. It is loaded as part of the `tidyverse` library.
+
+Also note that (unlike base R) `readr` does NOT convert string to factors automatically. Thank goodness. But if you know you want to automatically convert your strings to factor (i.e. from a pre-cleaned dataset) you can do so using `mutate` as follows:
+```{r }
+# Locate the actual tsv where gapminder data is stored on local computer; uses 'fs' package
+(gap_tsv <- path_package("gapminder", "extdata", "gapminder.tsv"))
+gapdata <- read_tsv(gap_tsv) %>% 
+           mutate(country = factor(country),
+                  continent = factor(continent))
+str(gapdata)
+```
+
+#### Writing files
+Make a habit to *save files to non-proprietary formats* unless you actually cannot. Saving in exotic/proprietary formats will be make it difficult/impossible for others (or you on a different computer) to reproduce. Use a format that is readable by a human using a text editor. I think what she means is avoid .rdata and .rmd as the only way the analysis is saved, particularly on somethign that is going to have multiple authors, or datasets that could be used again down the road, etc vs. a little local project you have. What she means is *DO NOT USE `save`, `load`, and/or `save.image` commands*, as they are R specific so you can't share to a non-R coding colleague. Her typical workflow is save a text file (eg .csv) and then save (and re-load) an R-specific binary file using `saveRDS` and `readRDS`. The R-specific binary files will save your factors that you have carefully re-ordered, otherwise, no need I think? Note that these files will *not work well with Git diff* so probably want to add to Gitignore I imagine.
+
+Example of code for writing csv and RDS files and using mutate to re-order factors with `forcats` package. Note that the *row order of the dataframe does not change*.
+```{r writing ex}
+#Make a useful toy example data summary output
+gap_life_exp <- gapdata %>% 
+                  group_by(country, continent) %>% 
+                  summarize(life_exp = max(lifeExp)) %>% 
+                  ungroup()
+gap_life_exp 
+head(levels(gap_life_exp$country)) #Currently in alphabetical order of country
+
+#Reorder based on increasing life expectancy, using forcats package
+gap_life_exp <- gap_life_exp %>% 
+                mutate(country = fct_reorder(country, life_exp))
+head(levels(gap_life_exp$country)) #Now countries in order of increasing max life expectancy
+
+#Write to csv
+write_csv(gap_life_exp, "gap_life_exp_ex.csv")
+head("gap_life_exp.csv")
+
+#Write R-specific binary object file
+# saveRDS(gap_life_exp, "gap_life_exp.rds")
+
+#Read the RDS file
+# gap_life_exp <- readRDS("gap_life_exp.rds")
+```
+
+### Chapter 10 - Factors
+Never forget that under the hood, R stores factors as integers!!!
+
+How to get a frequency table of factors
