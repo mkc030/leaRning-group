@@ -1,0 +1,38 @@
+---
+title: "Useful R functions to remember"
+author: "Michelle Coombe"
+date: "26/02/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+options(digits=3)
+```
+
+## Useful R and related references
+
+### Overleaf
+This is an online LaTeX writing and publishing tool, and has different modes depending on your expertise level with LaTeX. https://www.overleaf.com/for/authors Free for personal use :) 
+
+## Useful math and summarizing functions
+
+#### Determining the minimium of multiple numbers in a vector
+Min() or max() give you ONE output for a vector, while pmin() or pmax() can give you MULTIPLE  outputs, depending on the length of the input. From ?pmin help documentation:
+```{r}
+5:1
+min(5:1, pi)  #Provides ONE output number
+pmin(5:1, pi) # Provides 5 output numbers
+```
+This can be useful when trying to determine a new column based on several possible input values, kinda like an if_else statement but using max or min rather than logical evaluators. See Dr. Caroline Colijn's example using data from Tianjin. 
+```{r}
+tdata=read.csv("Documents/R projects for laptop/EpiCoronaHack_Cluster/Tianjin135casesFeb22.csv",na.strings = "", stringsAsFactors = F)
+tdata$symptom_onset=as.Date(tdata$symptom_onset, format = "%d/%m/%Y")
+tdata$start_source=as.Date(tdata$start_source, format = "%d/%m/%Y")
+tdata$end_source=as.Date(tdata$end_source,format = "%d/%m/%Y" )
+tdata$confirm_date=as.Date(tdata$confirm_date,format = "%d/%m/%Y" )
+
+tdata$end_source[which(is.na(tdata$end_source))]=tdata$symptom_onset[which(is.na(tdata$end_source))]  # if no end exposure: set to symptom onset 
+tdata$end_source = pmin(tdata$end_source, tdata$symptom_onset) # if end exposure after onset, set to onset 
+```
