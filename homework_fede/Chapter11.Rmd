@@ -1,0 +1,81 @@
+---
+title: "Chapter 11"
+author: "Federico Andrade-Rivas"
+date: "March 17, 2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Chapter 11 on VECTORS
+Here we discuss common remedial tasks for cleaning and transforming character data, also known as “strings”. A data frame or tibble will consist of one or more atomic vectors of a certain class. This lesson deals with things you can do with vectors of class character.
+
+The stringr package is part of the core packages of the tidyverse. Main functions start with str_. Auto-complete is your friend.
+
+The chapter provides a lot of resources for different purposes, making it clear that it would only deal with the surface of the topic and when you find a particular issue, you should go to those resources.
+
+
+```{r Loadpackages}
+library(tidyverse)
+
+```
+
+#### Basic string manipulation tasks. 
+
+Detec or filter on a targeted string using str_detect
+
+```{r bassic}
+#Detect how many fruits contain  the word fruit.
+
+str_detect(fruit, pattern ="fruit")
+
+my_fruit <- str_subset(fruit, pattern = "fruit")
+my_fruit
+
+```
+
+You can use stringr to split strings on a delimiter that you can set. For example, in this case we can use the space between compuoun word to split them.
+
+With str_split you get a list in return. You can use str_split to get a matrix with a fixed number of colums.
+
+Also there is an alternative of using separate() if the variable is located in a data frame
+
+
+```{r SplitDelimiter}
+my_fruit %>% str_split(pattern = " ")
+
+my_fruit %>% str_split_fixed(pattern = " ", n = 2)
+
+my_fruit_df <- tibble(my_fruit)
+
+my_fruit_df %>% separate(my_fruit, into = c("pre", "post"), sep = " " )
+
+
+```
+
+### 11.4.3 Substring extraction (and replacement) by position
+
+You can count characters using str_length. Using str_sub() you can snip out substrings based on character position. A space is counted in the string length.
+
+Note that the start and end arguments of str_sub are vectorized (meaning that the position is not a fixed number but a vector)
+
+Finally, str_sub() also works for assignment, i.e. on the left hand side of <-.
+
+``` {r substringextraction}
+length(my_fruit)
+str_length(my_fruit)
+
+head(fruit) %>% str_sub(1,4)
+
+tibble(fruit) %>% head() %>% mutate(Snipped = str_sub(fruit, 1:6, 3:8))
+
+
+x <- head(fruit,3)
+
+str_sub(x, 1, 3) <- "AAA"
+x
+```
+
+
