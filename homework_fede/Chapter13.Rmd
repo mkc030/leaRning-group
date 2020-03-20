@@ -1,0 +1,135 @@
+---
+title: "Chapter 13"
+author: "Federico Andrade-Rivas"
+date: "March 19, 2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##Chapter 13 Dates and Times
+
+```{r Loadpackages}
+library(tidyverse)
+library(lubridate)
+library(nycflights13)
+```
+
+
+Get times! Lubridate, and Rbase
+```{r times}
+today()
+#lubridate
+
+Sys.Date()
+#Base R
+
+str(Sys.Date())
+
+class(Sys.Date())
+
+Sys.time()
+#Rbase
+
+now()
+#Lubridate
+
+##They both give you something of class POSIXct in R jargon.
+str(Sys.time())
+
+class(Sys.time())
+
+str(now())
+
+class(now())
+
+```
+
+###13.5 Get date or date-time from character
+
+An approach is to use the helpers provided by lubridate. They automatically work out the format once you specify the order of the component. To use them, identify the order in which year, month, and day appear in your dates, then arrange “y”, “m”, and “d” in the same order. That gives you the name of the 
+lubridate function that will parse your date. For example:
+
+These functions also take unquoted numbers. This is the most concise way to create a single date/time object, as you might need when filtering date/time data. ymd() is short and unambiguous.
+
+``` {r fromStrings}
+ymd("2017-01-31")
+
+mdy("January 31st, 2017")
+
+dmy("2017-01-31")
+
+ymd(20170131)
+
+```
+To create a date-time, add an underscore and one or more of “h”, “m”, and “s” to the name of the parsing function:
+
+```{r timehour}
+ymd_hms("2017-01-31 21:34:58")
+
+mdy_hm("01/31/2017 08:01")
+
+##You can also force the creation of a date-time from a date by supplying a timezone:
+ymd(20170131, tz = "UTC")
+
+```
+
+###13.6 Build date or date-time from parts
+
+Instead of a single string, sometimes you’ll have the individual components of the date-time spread across multiple columns. This is what we have in the flights data:
+
+```{r diffColumns}
+
+flights %>% select(year, month, day, hour, minute)
+```
+
+To create a date/time from this sort of input, use make_date() for dates, or make_datetime() for date-times:
+
+```{r dateTime}
+flights %>% select(year, month, day, hour, minute) %>% 
+            mutate(departure = make_datetime(year, month, day, hour, minute))
+
+```
+
+Let’s do the same thing for each of the four time columns in flights. The times are represented in a slightly odd format, so we use modulus arithmetic to pull out the hour and minute components. Once I’ve created the date-time variables, I focus in on the variables we’ll explore in the rest of the chapter.
+
+```{r maketime}
+make_datetime_100 <- function(year, month, day, time) {
+make_datetime(year, month, day, time %/% 100, time %% 100)}
+
+flights_dt <- flights %>% 
+  filter(!is.na(dep_time), !is.na(arr_time)) %>% 
+  mutate(
+    dep_time = make_datetime_100(year, month, day, dep_time),
+    arr_time = make_datetime_100(year, month, day, arr_time),
+    sched_dep_time = make_datetime_100(year, month, day, sched_dep_time),
+    sched_arr_time = make_datetime_100(year, month, day, sched_arr_time)
+  ) %>% 
+  select(origin, dest, ends_with("delay"), ends_with("time"))
+##NOTE the ends_with() function. Selects the variable has the string provided at the end =)
+
+flights_dt
+
+
+```
+
+Plotting distribution of departure times across the year
+```{r, echo=FALSE }
+flights_dt %>% 
+  ggplot(aes(dep_time)) + 
+  geom_freqpoly(binwidth = 86400) # 86400 seconds = 1 day
+
+```
+
+Or within a single day:
+```{r singleday, echo=FALSE}
+flights_dt %>% 
+  filter(dep_time < ymd(20130102)) %>% 
+  ggplot(aes(dep_time)) + 
+  geom_freqpoly(binwidth = 600) # 600 s = 10 minutes
+
+```
+
+
+
