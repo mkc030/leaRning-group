@@ -42,9 +42,9 @@ This function is no longer recommended for use, but as there are many examples w
 
 Note here that adding the two variables at the end ('Female' and 'Male') specifies the two columns that are gathered together into two new columns. If you forget to add these, the function defaults to gathering the first two columns in the dataframe. Not helpful in this case!!! 
 
-The first new column *(column name specified using* `key = `*)* is filled by the column names from the original dataset (eg "Female" and "Male" in this case). 
+The first new column **(column name specified using** `key = `**)** is filled by the column names from the original dataset (eg "Female" and "Male" in this case). 
 
-The second new column *(column name specified using* `value = `*)* is filled by the cell values contained within the two gathered columns (eg the numbers representing word count in this case).
+The second new column **(column name specified using** `value = `**)** is filled by the cell values contained within the two gathered columns (eg the numbers representing word count in this case).
 
 ```{r tidy the untidy with gather}
 lotr_tidy <- gather(lotr_untidy,
@@ -54,12 +54,12 @@ lotr_tidy <- gather(lotr_untidy,
 ```
 
 #### Use the new tidyverse function - `pivot_longer()` 
-This function replaces gather—*and conversly,* `pivot_wider()` *replaces* `spread()`. See `vignette("pivot")` for details, but in essence: 
+This function replaces gather—**and conversly,** `pivot_wider()` **replaces** `spread()`. See `vignette("pivot")` for details, but in essence: 
 
 * the first argument is the dataset, 
 * the second argument is the columns to be reshaped, 
-`names_to` gives the new column name containing values based on the old column names *(eg gender in our case)*, and 
-* `values_to` gives the new column name for the old cell values *(eg word count in our case)*.
+`names_to` gives the new column name containing values based on the old column names **(eg gender in our case)**, and 
+* `values_to` gives the new column name for the old cell values **(eg word count in our case)**.
 
 The advantage of the new pivot functions are that they can also be used with different datatypes being used as column names (eg dates, numeric data, many variables in one column name, etc), it can drop rows containing NAs in the old cell values, and allows for some additional data maninpulation directly within the pivot function. See vignette for more details. It is really good.
 ```{r tidy the untidy with pivot_longer}
@@ -78,7 +78,8 @@ identical(lotr_pivtidy, lotr_tidy) #Hmmm this is false, but maybe just because o
 #### Reading files
 Jenny's advice: use the built-in arguments for data importation to do as much data wrangling during import as possible, rather than coding it all in post-import. Read the vignette on column types.
 ```{r Intro to readr}
-vignette("readr")
+#Only works if type into console, not via rmd
+# vignette("readr")  
 ```
 
 My only thought is that importing as is and then fussing later allows you to do data exploration and get a feel for what is in your dataset, prior to automatically converting, as R might fail silently. So maybe it depends on how familiar you are with the data and/or if you are using testing functions to see if there are unexpected things that come up during the import (i.e. dates or numbers out of range, something getting converted to an NA which shouldn't be, etc).
@@ -96,9 +97,9 @@ str(gapdata)
 ```
 
 #### Writing files
-Make a habit to *save files to non-proprietary formats* unless you actually cannot. Saving in exotic/proprietary formats will be make it difficult/impossible for others (or you on a different computer) to reproduce. Use a format that is readable by a human using a text editor. I think what she means is avoid .rdata and .rmd as the only way the analysis is saved, particularly on somethign that is going to have multiple authors, or datasets that could be used again down the road, etc vs. a little local project you have. What she means is *DO NOT USE `save`, `load`, and/or `save.image` commands*, as they are R specific so you can't share to a non-R coding colleague. Her typical workflow is save a text file (eg .csv) and then save (and re-load) an R-specific binary file using `saveRDS` and `readRDS`. The R-specific binary files will save your factors that you have carefully re-ordered, otherwise, no need I think? Note that these files will *not work well with Git diff* so probably want to add to Gitignore I imagine.
+Make a habit to **save files to non-proprietary formats** unless you actually cannot. Saving in exotic/proprietary formats will be make it difficult/impossible for others (or you on a different computer) to reproduce. Use a format that is readable by a human using a text editor. I think what she means is avoid .rdata and .rmd as the only way the analysis is saved, particularly on somethign that is going to have multiple authors, or datasets that could be used again down the road, etc vs. a little local project you have. What she means is **DO NOT USE `save`, `load`, and/or `save.image` commands**, as they are R specific so you can't share to a non-R coding colleague. Her typical workflow is save a text file (eg .csv) and then save (and re-load) an R-specific binary file using `saveRDS` and `readRDS`. The R-specific binary files will save your factors that you have carefully re-ordered, otherwise, no need I think? Note that these files will **not work well with Git diff** so probably want to add to Gitignore I imagine.
 
-Example of code for writing csv and RDS files and using mutate to re-order factors with `forcats` package. Note that the *row order of the dataframe does not change*.
+Example of code for writing csv and RDS files and using mutate to re-order factors with `forcats` package. Note that the **row order of the dataframe does not change**.
 ```{r writing ex}
 #Make a useful toy example data summary output
 gap_life_exp <- gapdata %>% 
@@ -127,4 +128,254 @@ head("gap_life_exp.csv")
 ### Chapter 10 - Factors
 Never forget that under the hood, R stores factors as integers!!!
 
-How to get a frequency table of factors
+How to get a frequency table of factors - can use `dplyr::count` or `forcats::fct_count`.
+```{r Frequency tables}
+library(gapminder)
+# Dplyr ex
+gapminder %>% 
+  count(continent)
+
+# Forcats ex
+fct_count(gapminder$continent)
+```
+
+How to drop unused levels - can use either `droplevels()` from base R or `forcats::fct_drop`.
+
+How to change order of the levels: by default they are ordered alphabetically. It makes more sense to order variables based on either (i) frequency or (ii) according to the summary statistic (e.g. mean, frequency) of another variable. Examples on how to order by frequency (forwards and backwards):
+```{r Ordering levels by frequency of that variable}
+# Default
+gapminder$continent %>% 
+  levels()
+
+# Order by highest frequency first
+gapminder$continent %>% 
+  fct_infreq() %>%
+  levels()
+  
+# Order by lowest frequency first
+gapminder$continent %>% 
+  fct_infreq() %>% 
+  fct_rev() %>% 
+  levels()
+```
+
+Examples of how to order by another variable:
+```{r Ordering levels by summary of another variable}
+# Order countries by median life expectancy
+fct_reorder(gapminder$country, gapminder$lifeExp) %>% 
+  levels() %>% 
+  head()
+
+# Order according to minimum life expectancy (i.e. a different summary stat) instead of median
+fct_reorder(gapminder$country, gapminder$lifeExp, min) %>% 
+  levels() %>% 
+  head()
+
+# Order countries by median life expectancy, backwards (i.e. highest median lifExp first)
+fct_reorder(gapminder$country, gapminder$lifeExp, .desc = T) %>% 
+  levels() %>% 
+  head()
+```
+
+Examples of how useful this can be for Cleveland plots. Note that you should use `forcats::fct_reorder2` when you have a line chart of quantitative x vs another quantitative y and your factor is used for color...this is because **the legend will be in the same order as the levels of the factor!** Thank goodness.
+```{r Dot plots with factors}
+gap_asia_2007 <- gapminder %>% filter(year == 2007, continent == "Asia")
+
+# Unordered
+ggplot(gap_asia_2007, aes(x = lifeExp, y = country)) + geom_point()
+
+# Ordered
+ggplot(gap_asia_2007, aes(x = lifeExp, y = fct_reorder(country, lifeExp))) +
+  geom_point()
+
+# Using fct_reorder2() to ensure legend is in same order as the data
+h_countries <- c("Egypt", "Haiti", "Romania", "Thailand", "Venezuela")
+h_gap <- gapminder %>%
+  filter(country %in% h_countries) %>% 
+  droplevels()
+
+ggplot(h_gap, aes(x = year, y = lifeExp,
+                  color = fct_reorder2(country, year, lifeExp))) +
+  geom_line() +
+  labs(color = "country")
+```
+
+You can also reorder factors in a more manual way using `fct_relevel`. For instance, you might want one or two levels first, while you don't really care about the remaining order (i.e. you want to compare Canada vs the rest of the world). You can also manually rename levels using `fct_recode`. Lastly, you can combine a factor variable in two dataframes **with different levels** by using `forcats::fct_c`. If you just normally concatenate using `base::c` it will add them as numeric variables, due to how factors are stored under the hood in R. Note that alternatively you can use `bind_rows` when combining dataframes as it will coerce the factor variable back to a character class to combine the two. 
+```{R Manually editing factors}
+# Bring one or two factors to the front
+h_gap$country %>% levels()
+h_gap$country %>% fct_relevel("Romania", "Haiti") %>% levels()
+
+# Rename your factors
+i_gap <- gapminder %>% 
+  filter(country %in% c("United States", "Sweden", "Australia")) %>% 
+  droplevels()
+i_gap$country %>% levels()
+
+i_gap$country %>%
+  fct_recode("USA" = "United States", "Oz" = "Australia") %>% levels()
+
+# Combining a factor variable with different levels
+df1 <- gapminder %>%
+  filter(country %in% c("United States", "Mexico"), year > 2000) %>%
+  droplevels()
+df2 <- gapminder %>%
+  filter(country %in% c("France", "Germany"), year > 2000) %>%
+  droplevels()
+
+c(df1$country, df2$country)
+
+fct_c(df1$country, df2$country)
+```
+
+### Chapter 11 - Characters
+Great packages to use with characters: 
+
+* `stringr`
+
+* `tidyr` (to split one character vector into many and vice versa using `separate`, `unite`, and `extract`)
+
+* baseR (`nchar`, `strsplit`, `substr`, `paste`, `paste0`)
+
+* `glue` package for string interpolation (especially if `stringr::str_interp` isn't enough).
+
+
+Regular expression resources:
+
+* The [Strings chapter](https://r4ds.had.co.nz/strings.html) of R for Data Science ebook
+
+* `rex` R package, as it uses
+
+* baseR (`grep`, `grepl`, etc)
+
+* REgex testers to see if your regular expression will actually work on a test string of your devising: [regex101](https://regex101.com) (This one has a very friendly interface for beginner users) and [regexr](https://regexr.com) (probably just as good but looks a little more daunting?)
+
+#### Stringr functions - overview
+Useful stringr functions:
+
+* `str_detect` You can either use a literal string or a regular expression for your pattern. This function returns a vector of TRUE/FALSE for each instance of your string data (i.e. number of rows in your dataframe).
+
+* `str_subset` This function returns a vector of matching character strings. Thus, it allows you keep only the matching elements (i.e. those strings that would match as TRUE in the above vector).
+
+* `str_split` allows you to split a string based on a delimiter, which is the pattern argument. It returns a list, which is a bit of a pain in the butt, but necessary as there could be a variable number of elements returned for each split character string.
+
+* `str_split_fixed` is the same as `str_split` but if you know there will be only a certain number of elements for each split string (i.e. sampleIDs such as LAX-s20 split on the '-' delimiter will always have 2 pieces), then you can specify the number of pieces and return a character matrix.
+```{r spliting 1 - with str_split}
+(my_fruit <- str_subset(fruit, pattern = "fruit"))
+str_split_fixed(my_fruit, pattern = " ", n = 2)
+```
+
+* `separate` is similar to `str_split` family but works when variable is in a dataframe. Also, very useful in that it will let you enter missing values into columns if there are unequal number of pieces.
+```{r spliting 2 - with separate}
+# Without using fill argument (default is to warn and then right fill)
+my_fruit_df <- tibble(my_fruit)
+my_fruit_df %>% 
+  separate(my_fruit, into = c("pre", "post"), sep = " ")
+
+# With fill argument, right pad
+my_fruit_df %>% 
+  separate(my_fruit, into = c("pre", "post"), sep = " ", fill = "right")
+
+# With fill argument, left pad
+my_fruit_df %>% 
+  separate(my_fruit, into = c("pre", "post"), sep = " ", fill = "left")
+```
+
+* `str_length` counts the length of each character string within the vector
+
+* `str_sub` lets you snip out substrings based on character position. The start and end arguments are vectorized, meaning they can provide a sliding window (for ex, a sliding 3-character window when using a vector rather than just an integer). It can also be used for replacing substrings when placed on the lefthand side of the assignment operator.
+```{r snipping substrings}
+# Based just on a single position
+head(fruit) %>% 
+  str_sub(start = 1, end = 3)
+
+# Using a sliding window
+tibble(fruit) %>% 
+  head() %>% 
+  mutate(snip = str_sub(string = fruit, start = 1:6, end = 3:8)) 
+#oddly, it seems like pipe doesn't work well inside a second function within mutate??? ie need to re-specify fruit as the string argument for str_sub, but don't need to do so for mutate...I don't really get why but good to know for future trouble-shooting
+
+# Replacement of substrings
+(x <- head(fruit, 3))
+str_sub(x, 1, 3) <- "AAA"
+x
+```
+
+* `str_c` allows you to collapse a vector to a single string. Seems kinda useless but I guess it's mostly useful as a precursor for other operations you might want to do later (i.e. string encoding?). You can also do advanced mode by concatenating multiple element wise, with or without collasping the elements into a single string
+```{r uses of str_c}
+# Collapse into a single vector
+head(fruit) %>% 
+  str_c(collapse = ", ")
+
+# Glue multiple elements together into mutliple strings
+str_c(fruit[1:4], fruit[5:8], sep = " & ")
+
+# Glue multiple elements together AND collapse into one string
+str_c(fruit[1:4], fruit[5:8], sep = " & ", collapse = ", ")
+```
+
+* `unite` allows you to combine vectors that are variables in a dataframe into a single new variable.
+```{r unite ex}
+fruit_df <- tibble(
+  fruit1 = fruit[1:4],
+  fruit2 = fruit[5:8])
+
+fruit_df %>% 
+  unite("flavor_combo", fruit1, fruit2, sep = " & ")
+
+```
+
+* `str_replace` allows you to replace a string or substring using either a character pattern or regex pattern. A special case is `str_replace_na` for when you are trying to replace any 'NA's with a pattern. Similarly, `tidyr::replace_na` can be used within a dataframe. Note the use of `list` function to do so though!!!
+```{r replace ex}
+str_replace(my_fruit, pattern = "fruit", replacement = "THINGY")
+
+melons <- str_subset(fruit, pattern = "melon")
+melons[2] <- NA
+melons
+str_replace_na(melons, "UNKNOWN MELON")
+
+tibble(melons) %>% 
+  replace_na(replace = list(melons = "UNKNOWN MELON"))
+```
+
+#### Regular expressions with stringr - overview
+Sigh. Oh regular expressions. As her quote says "combining slashes and dots until a thing happens". My feelings exactly. Except usually it's not the thing I intend to happen.
+
+I'm basically going to copy the entire regex section text, examples, and all because I find it so difficult.
+
+*Important points on regex:*
+
+* It is case sensitive. i.a will match "Argent**i**n**a** but not **I**t**a**ly
+
+* You will need to **escape** any special characters (eg `\`) with a backslash. Meaning that in R, all the regular expressions starting with a backslash actually need to be typed with two backslashes (eg new line looks like `\\n` when written in R code).
+
+
+*Regex characters:*
+
+* `.` indicates any single character, except for a newline. Ex) `a.b` will match all countries that have an `a`, followed by any single character, followed by a `b`.
+
+* `\n` stands for newline
+
+* `^` is an anchor (i.e. used to express where the expression must occur within a string) for the **beginning** of the string. 
+
+* `$` is an anchor for the **end** of the string
+
+* `\b` is a word boundary
+
+* `\B` is **not** a word boundary
+
+```{r make data for regex}
+countries <- levels(gapminder$country)
+
+str_subset(countries, pattern = "i.a")
+str_subset(countries, pattern = "i.a$")
+
+str_subset(my_fruit, pattern = "d")
+str_subset(my_fruit, pattern = "^d")
+
+str_subset(fruit, pattern = "melon")
+str_subset(fruit, pattern = "\\bmelon")
+str_subset(fruit, pattern = "\\Bmelon")
+```
+
+* `[]` square brackets stand for 

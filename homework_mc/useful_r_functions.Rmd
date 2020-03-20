@@ -36,3 +36,7 @@ tdata$confirm_date=as.Date(tdata$confirm_date,format = "%d/%m/%Y" )
 tdata$end_source[which(is.na(tdata$end_source))]=tdata$symptom_onset[which(is.na(tdata$end_source))]  # if no end exposure: set to symptom onset 
 tdata$end_source = pmin(tdata$end_source, tdata$symptom_onset) # if end exposure after onset, set to onset 
 ```
+
+## Useful data wrangling functions
+
+Move one (or a few) column to the front of your dataframe. For instance, you just joined data and you want the sample ID, date and wetland as the first three columns to make it easier to read when extracting certain rows or something. Use `dplyr::select(special_var, everything())`, where `special_var` would be 'sampleID' or 'c(sampleID, date_col, wtld)' or whatever is the column you want first.
