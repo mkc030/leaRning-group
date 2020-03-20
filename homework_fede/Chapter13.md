@@ -70,7 +70,7 @@ class(Sys.Date())
 Sys.time()
 ```
 
-    ## [1] "2020-03-19 20:55:37 PDT"
+    ## [1] "2020-03-19 21:01:28 PDT"
 
 ``` r
 #Rbase
@@ -78,7 +78,7 @@ Sys.time()
 now()
 ```
 
-    ## [1] "2020-03-19 20:55:37 PDT"
+    ## [1] "2020-03-19 21:01:28 PDT"
 
 ``` r
 #Lubridate
@@ -87,7 +87,7 @@ now()
 str(Sys.time())
 ```
 
-    ##  POSIXct[1:1], format: "2020-03-19 20:55:37"
+    ##  POSIXct[1:1], format: "2020-03-19 21:01:28"
 
 ``` r
 class(Sys.time())
@@ -99,7 +99,7 @@ class(Sys.time())
 str(now())
 ```
 
-    ##  POSIXct[1:1], format: "2020-03-19 20:55:37"
+    ##  POSIXct[1:1], format: "2020-03-19 21:01:28"
 
 ``` r
 class(now())
@@ -243,4 +243,45 @@ flights_dt
 
 Plotting distribution of departure times across the year ![](Chapter13_files/figure-markdown_github/unnamed-chunk-1-1.png)
 
-Or within a single day: ![](Chapter13_files/figure-markdown_github/singleday-1.png)
+Or within a single day: ![](Chapter13_files/figure-markdown_github/singleday-1.png) Note that when you use date-times in a numeric context (like in a histogram), 1 means 1 second, so a binwidth of 86400 means one day. For dates, 1 means 1 day.
+
+### 16.2.3 From other types (R Studio Book)
+
+You may want to switch between a date-time and a date. That’s the job of as\_datetime() and as\_date():
+
+Sometimes you’ll get date/times as numeric offsets from the “Unix Epoch”, 1970-01-01. If the offset is in seconds, use as\_datetime(); if it’s in days, use as\_date().
+
+``` r
+as_datetime(today())
+```
+
+    ## [1] "2020-03-19 UTC"
+
+``` r
+#> [1] "2020-01-15 UTC"
+as_date(now())
+```
+
+    ## [1] "2020-03-19"
+
+``` r
+#> [1] "2020-01-15"
+
+
+as_datetime(60 * 60 * 10)
+```
+
+    ## [1] "1970-01-01 10:00:00 UTC"
+
+``` r
+#> [1] "1970-01-01 10:00:00 UTC"
+as_date(365 * 10 + 2)
+```
+
+    ## [1] "1980-01-01"
+
+``` r
+#> [1] "1980-01-01"
+```
+
+### 16.2.4 Exercises

@@ -130,6 +130,29 @@ flights_dt %>%
   geom_freqpoly(binwidth = 600) # 600 s = 10 minutes
 
 ```
+Note that when you use date-times in a numeric context (like in a histogram), 1 means 1 second, so a binwidth of 86400 means one day. For dates, 1 means 1 day.
 
+###16.2.3 From other types (R Studio Book)
+
+You may want to switch between a date-time and a date. That’s the job of as_datetime() and as_date():
+
+Sometimes you’ll get date/times as numeric offsets from the “Unix Epoch”, 1970-01-01. If the offset is in seconds, use as_datetime(); if it’s in days, use as_date().
+
+
+```{r}
+as_datetime(today())
+#> [1] "2020-01-15 UTC"
+as_date(now())
+#> [1] "2020-01-15"
+
+
+as_datetime(60 * 60 * 10)
+#> [1] "1970-01-01 10:00:00 UTC"
+as_date(365 * 10 + 2)
+#> [1] "1980-01-01"
+
+```
+
+###16.2.4 Exercises
 
 
