@@ -242,7 +242,7 @@ Great packages to use with characters:
 
 Regular expression resources:
 
-* The [Strings chapter](https://r4ds.had.co.nz/strings.html) of R for Data Science ebook
+* The [Strings chapter](https://r4ds.had.co.nz/strings.html) of R for Data Science ebook. Also a good resource for looking up how to use groups and backreferences, which are not discussed here.
 
 * `rex` R package, as it uses
 
@@ -378,4 +378,73 @@ str_subset(fruit, pattern = "\\bmelon")
 str_subset(fruit, pattern = "\\Bmelon")
 ```
 
-* `[]` square brackets stand for 
+* `[]` square brackets around something indicates it is a type of 'character class'. 
+
+* A whitespace character can be represented by `\s` (a metacharacter) or by `[:space:]` (which belongs to POSIX class). 
+```{r Splitting based on whitespace}
+# Adding quotes to a character string (easier string example than whitespace...)
+cat("Do you use \"airquotes\" much?")
+
+# Spliting using a human-readable character string
+str_split_fixed(fruit, pattern = " ", n = 2)
+
+# Spliting using a metacharacter
+str_split_fixed(my_fruit, pattern = "\\s", n = 2)
+
+# Spliting using POSIX class
+str_split_fixed(my_fruit, pattern = "[[:space:]]", n = 2)
+```
+
+* If you use a special character in a string in R, you need to tell R to use it as a character by escaping it. This is done by adding a single backslash. However, if you are using a special character within a regular expression, R reads it as a character string first before interpreting as a regex...so you need to escape the backslash, and you end up needing **TWO** backslashes. Also note that if you are using a POSIX class within a regular expression you need to escape by using two sets of square brackets.
+
+* Other examples of escaping special characters include: 
+  + periods (need to write as `\.` in normal string or `\\.` within a regular expression)
+  + square brackets (need to write as `\[` in normal string or `\\[` within a regular expression), 
+  + quotes inside of quotes (need to write as `\"` in normal string or `\\"` within a regular expression)
+  + newline (need to write as `\n` in normal string or `\\n` within a regular expression)
+  + tab (need to write as `\t` in normal string or `\\t` within a regular expression)
+  + space (need to write as `\s` in normal string or `\\s` within a regular expression)
+
+* `[:punct:]` looks for a string containing punctuation
+
+* `\d` stands for character class digit
+
+* Quantifiers. These symbols indicate how many characters (or metacharacters, or classes, etc) the pattern is allowed to match.
+  + `*` indicates 0 or more; so for {n} match exactly 'n'
+  + `+` indicates 1 or more; so for {n} match at least 'n'
+  + `?` indicates 0 or 1; so for { ,m} match at most 'm' and for {n,m} match between 'n' and 'm', inclusive
+```{r Quantifiers examples}
+# Most inclusive example 
+  #'l.*e' will match strings with 0 or more characters between, 
+  #thus a string with an 'l' eventually followed by an 'e'
+(matches <-  str_subset(fruit, pattern = "l.*e"))
+
+# Less inclusive example 
+  #'l.+e' will match strings with 1 or more characters between,
+  #thus will no longer match 'le'
+list(match = intersect(matches, str_subset(fruit, pattern = "l.+e")),
+     no_match = setdiff(matches, str_subset(fruit, pattern = "l.+e")))
+
+# Another less inclusive example
+  #'l.?e' will match strings with at MOST 1 character between,
+  #Thus the EXcluded strings have 2 or more characters between 'l' and 'e'
+list(match = intersect(matches, str_subset(fruit, pattern = "l.?e")),
+     no_match = setdiff(matches, str_subset(fruit, pattern = "l.?e")))
+
+# Final less inclusive example
+  #'le' removes the quantifier and matches ONLY strings with exactly 'le'
+  list(match = intersect(matches, str_subset(fruit, pattern = "le")),
+     no_match = setdiff(matches, str_subset(fruit, pattern = "le")))
+```
+
+### Chapter 13 - Dates and times
+
+The take home is to use `lubridate`. And read up on it in the R for Data Science [chapter](https://r4ds.had.co.nz/dates-and-times.html). 
+
+Also - apparently date times are printed within tibbles as `<dttm>` but elsewhere in R are refered to as `POSIXct`. Ah!
+
+Another big take home (which I have learnt the hard way...) is use the simplest class possible. If you need a date, use a `date` class, instead of `date-time` class; similarly if you need a time, use a `time` class (best done through using the `hms` package). 
+
+If you need to switch between a date-time to a date use `as_date`. To switch from a date to a date-time, use `as_datetime`. 
+
+TODO: I still need to go back through this chapter and pull more stuff out, but the majority was in the DataCamp course, so don't spend too much time on it, apart from the useful looking examples!!!
