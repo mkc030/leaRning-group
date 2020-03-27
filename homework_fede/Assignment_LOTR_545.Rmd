@@ -1,0 +1,96 @@
+---
+title: "Lord of the Rings"
+author: "Federico Andrade-Rivas"
+date: "March 1, 2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+``` {r libraries, include=FALSE}
+library(tidyverse)
+library(gapminder)
+library(ggplot2)
+```
+
+
+### R Markdown
+
+
+```{r readfiles, include=FALSE}
+
+f_lord <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "data", "The_Fellowship_Of_The_Ring.csv"))
+
+
+r_lord <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "data", "The_Return_Of_The_King.csv")) 
+  
+
+
+two_lord <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "data", "The_Two_Towers.csv"))  
+  
+```
+
+
+
+### Bidding all the datasets
+
+
+```{r bidding}
+
+lord_untidy <- bind_rows(f_lord, two_lord, r_lord)
+str(lord_untidy)
+
+```
+
+### Tiddy untidy data set. I used pivot_longer as it was recommended. More functionaluity
+
+
+```{r tiddy}
+
+lord_tidy <- lord_untidy %>% pivot_longer(cols = c(Female, Male), names_to = "Gender", values_to = "Words") %>% 
+  arrange(Film, Race, Gender)
+
+
+```
+
+```{r write}
+
+write_csv(lord_tidy, "lotr_tidy2.csv")
+
+```
+
+###Exercises Female and Male databases
+
+```{r tidyFemaleMAle}
+female <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "data", "Female.csv"))
+
+
+male <- read_csv(file.path("Assignment_LOTR_545_files", "lotr-tidy-master", "data", "Male.csv")) 
+
+
+lord_bind_MF <- bind_rows(female, male)
+
+lord_tidy2 <- lord_bind_MF %>% pivot_longer(cols = c(Elf, Hobbit, Man), names_to = "Race", values_to = "Words") %>% 
+                select(Film, Race, Gender, Words) %>% 
+                arrange(Film, Race, Gender)
+
+```
+
+
+```{r spreadORpivot_wider}
+
+lord_tidy2 %>% pivot_wider(names_from = Race, values_from = Words )
+
+lord_tidy2 %>% pivot_wider(names_from = Gender, values_from = Words )
+
+lord_unite <- lord_tidy2 %>% unite("Race_Gender", Race, Gender) %>% 
+  pivot_wider(names_from = Race_Gender, values_from = Words )
+
+
+
+```
+
+
+
