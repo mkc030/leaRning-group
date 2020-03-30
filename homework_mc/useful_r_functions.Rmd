@@ -2,7 +2,7 @@
 title: "Useful R functions to remember"
 author: "Michelle Coombe"
 date: "26/02/2020"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -40,3 +40,12 @@ tdata$end_source = pmin(tdata$end_source, tdata$symptom_onset) # if end exposure
 ## Useful data wrangling functions
 
 Move one (or a few) column to the front of your dataframe. For instance, you just joined data and you want the sample ID, date and wetland as the first three columns to make it easier to read when extracting certain rows or something. Use `dplyr::select(special_var, everything())`, where `special_var` would be 'sampleID' or 'c(sampleID, date_col, wtld)' or whatever is the column you want first.
+
+To get rows from a dataframe with the minimum or maxium value (based on rank) of a certain variable - use dplyr's `min_rank` in combination with `filter`. The advantage is that you don't just get the sole minimum or maximum rank (eg with `min` or `max`) but instead can specify the bottom or top of any 'n' value (i.e. top 5). You could also use grouping variables (e.g. country) to get the top/bottom 5 rows within a country for that variable. 
+```{r min rank ex}
+library(gapminder)
+#Method 2 (using dplyr and putting everything into one table:)
+  gapminder %>% 
+   filter(min_rank(gdpPercap) <= 5 | min_rank(desc(gdpPercap)) <= 5) %>% 
+   arrange(gdpPercap)
+```

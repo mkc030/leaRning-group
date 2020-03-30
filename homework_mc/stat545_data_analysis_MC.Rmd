@@ -1,7 +1,10 @@
 ---
 title: "Notes on Data Analysis chapters from stat545.com"
-output: html_document:
-  keep_md: TRUE
+author: "Michelle Coombe"
+output: github_document
+#params:
+#  date: !r Sys.Date()
+#TODO - need to figure out how to put today's date in the header...
 ---
 
 ```{r setup, include=FALSE}
@@ -447,4 +450,118 @@ Another big take home (which I have learnt the hard way...) is use the simplest 
 
 If you need to switch between a date-time to a date use `as_date`. To switch from a date to a date-time, use `as_datetime`. 
 
-TODO: I still need to go back through this chapter and pull more stuff out, but the majority was in the DataCamp course, so don't spend too much time on it, apart from the useful looking examples!!!
+#### Extracting and editing dates (or datetimes) from character strings
+
+Use lubridate functions, based on the format of the string (eg `ymd`, `mdy`, and `dmy`). The string can be quoted or unquoted. To create a date-time, add an underscore with the time component (eg `ymd_hms` or `mdy_hm`). Alternatively, adding the time zone argument (`tz =`) within a date function will also give a date-time. Time zones are a bit of a pain in the butt and I've never had to deal with converting them, so for now, I'll leave it off of this summary sheet (but R for Data Science has more info on it if needed, as well as the raw time zone database [website](http://www.iana.org/time-zones)).
+
+You can paste together multiple columns to make a date (`make_date`) or datetime (`make_datetime`). 
+```{r dates from columns}
+library(lubridate)
+library(nycflights13)
+#Note do NOT try to use 'datatable' to format this, as the dataset is WAY too big and it makes R freeze
+flights %>% 
+  select(year, month, day, hour, minute) %>% 
+  mutate(departure = make_datetime(year, month, day, hour, minute))
+```
+
+You can also get components of a date or time using the following functions from lubridate:
+`year`, `month`, `mday` (for day of the month), `yday` (for day of the year), `wday` (for day of the week), `hour`, `minute`, and `second`. Additional arguments for `month` and `wday` include setting `label = T` to get the abbreviated name of the month or day of the week, while `abbr = F` returns the full name.
+```{r flights by wday plot}
+#Times are in a weird format in 'flights' so this function uses modulus arithmetic to get hour and min 
+  #Note that times are listed as 515 for 05:15hr
+    #and 515 %/% 100 returns 5
+    #while 515 %% 100 returns 15
+make_datetime_100 <- function(year, month, day, time) {
+  make_datetime(year, month, day, time %/% 100, time %% 100) 
+}
+
+#Make a new flights dataframe with datatimes
+flights_dt <- flights %>% 
+  filter(!is.na(dep_time), !is.na(arr_time)) %>% 
+  mutate(dep_time = make_datetime_100(year, month, day, dep_time),
+         arr_time = make_datetime_100(year, month, day, arr_time),
+         sched_dep_time = make_datetime_100(year, month, day, sched_dep_time),
+         sched_arr_time = make_datetime_100(year, month, day, sched_arr_time)
+  ) %>% 
+  select(origin, dest, ends_with("delay"), ends_with("time"))
+
+#Make a bar chart to see the number of flights departing on weekdays vs weekend days
+flights_dt %>% 
+  mutate(wday = wday(dep_time, label = T)) %>% 
+  ggplot(aes(x = wday)) +
+    geom_bar()
+
+```
+You can set/edit components of a date/time using those same accessor functions (eg `month`). Likely even more useful is the `update` function, which creates a NEW object and allows you set multiple values at once, and will rollover values that are too big. This can be useful in setting larger components of a date to a constant so that you can explore patterns in the smaller components; for instance, to show the distribution of flights over the course of a day for every day of the year, as below.
+```{r editing dates}
+(datetime <- ymd_hms("2016-07-18 12:34:56"))
+
+#Edit one component in a date
+year(datetime) <- 2020
+datetime
+
+#Edit multiple components in a year
+update(datetime, year = 2012, month = 2, mday = 2, hour = 2)
+datetime #Note this does NOT edit the original datetime, but creates a NEW object!!!
+
+#Roll over in dates when editing with update
+ymd("2015-02-01") %>% 
+  update(mday = 30)
+
+#Setting year date to a constant to explore patterns in flight times over the course of 24h
+flights_dt %>% 
+  mutate(dep_hour = update(dep_time, yday = 1)) %>% 
+  ggplot(aes(dep_hour)) +
+    geom_freqpoly(binwidth = 300)
+```
+
+You can also ROUND dates to a unit of time desired. You can round down (`floor_date`), round up (`ceiling_date`), or round to the nearest (just `round_date`). Apparently, this is most useful when trying to calculate difference between a rounded and unrounded date (but no examples provided...).
+```{r rounding dates}
+flights_dt %>% 
+  count(week = floor_date(dep_time, "week")) %>% 
+  ggplot(aes(week, n)) +
+  geom_line()
+```
+
+
+#### Time spans
+
+This is what allows you to do subtraction, addition, and division with dates. Time spans are represented in 3 ways:
+
+* durations = represents an extact number of seconds
+
+* periods = represents human units like weeks and months
+
+* intervals = represents a starting and ending point
+
+Which to choose? Always choose the simplest data structure that solves your problem. If you care about physical time, use duration; if you need to add human times, use a period; if you need to figure out how long a span is in human units, use an interval. Additional details and examples are below.
+
+**DURATIONS** 
+When you substract two dates you get a `difftime` object, which records a time span of seconds, minutes, hours, days or weeks...so lubridate's duration functions always uses seconds. All duration functions are preceded with `d`: `dseconds`, `dminutes`, `dhours`, `ddays`, `dweeks`, and `dyears`. Note that the results of date arithemtic in durations may sometimes surprise you, as it adjusts for differences in time zones and time changes due to daylight savings times!!!
+
+**PERIODS**
+Periods are often more inutitive to work with than durations (but less exact, as they don't have a fixed length in seconds). These functions are just the 'normal human' names we give to times (in the PLURAL form!!!): `seconds`, `minutes`, `hours`, `days`, `months`, `weeks`, and `years`. As with durations, you can add, substract and multiply periods or to other dates. Unlike durations, the results do not take into account leap years, or daylight savings times, but probably end up giving a result you actually respect (see below).
+```{r Durations vs Periods}
+# A leap year
+ymd("2016-01-01") + dyears(1)
+ymd("2016-01-01") + years(1)
+
+# Daylight Savings Time
+one_pm <- ymd_hms("2016-03-12 13:00:00", tz = "America/New_York")
+one_pm + ddays(1)
+one_pm + days(1)
+```
+**INTERVALS**
+An interval is a duration with a starting point and an end point, this makes it precise so you can determine exactly how long it is. You make an interval using the `%--%` operator.
+```{r Intervals vs Periods}
+# Arithmatic with periods are not accurate, so will get a warning
+years(1) / days(1)
+
+# Arithmatic with intervals is more precise
+next_year <- today() + years(1)
+(today() %--% next_year) /ddays(1)
+```
+To find out how many periods fall into an interval, you need to use integer division.
+```{r Integer division with intervals}
+(today() %--% next_year) %/% days(1)
+```

@@ -48,12 +48,31 @@ gapminder %>%
   summarize(max_gdp = max(gdpPercap))
 
 # 1.4b Three countries with the largest GPD and lowest GDP
-gapminder %>% 
-  group_by(country) %>% 
-  summarise(max_gdp = max(gdpPercap)) %>% 
-  filter(min_rank(max_gdp) <= 3 | min_rank(desc(max_gdp)) <= 3) %>% 
-  arrange(max_gdp)
+#THIS FOLLOWING CODE IS WRONG!!! Thanks Fede for catching this! :) 
+  #I read the question wrong, but the following code doesn't even answer the above question
+  #correctly, I think...
+# gapminder %>% 
+#   group_by(country) %>% 
+#   summarise(max_gdp = max(gdpPercap)) %>% 
+ #  filter(min_rank(max_gdp) <= 3 | min_rank(desc(max_gdp)) <= 3) %>% 
+#  arrange(max_gdp)
 
+# 1.4b Three ROWS with the largest per capita GPD and lowest GDP (actual question)
+
+#Method 1 (one line of code for largest and and smallest)
+  #Note that the help file for 'sort' function says it only works for VECTORS, not on dataframes,   #so I didn't use it, and I'm not exactly sure what the 'hint' on the homework meant
+
+  #Smallest gdpPercap (i.e ASCENDING order, the default)
+  head(gapminder[order(gapminder$gdpPercap), ], n = 3)
+  #Largest gdpPercap (i.e. DESCENDING order, )
+  head(gapminder[order(-gapminder$gdpPercap), ], n = 3)
+
+#Method 2 (using dplyr and putting everything into one table:)
+  gapminder %>% 
+   filter(min_rank(gdpPercap) <= 3 | min_rank(desc(gdpPercap)) <= 3) %>% 
+   arrange(gdpPercap)
+  
+  
 # 1.5 Scatterplot of Canada life expectancy vs GDP
 gapminder %>% 
   filter(country == "Canada") %>% 
