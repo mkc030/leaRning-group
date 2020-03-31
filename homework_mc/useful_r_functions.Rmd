@@ -49,3 +49,17 @@ library(gapminder)
    filter(min_rank(gdpPercap) <= 5 | min_rank(desc(gdpPercap)) <= 5) %>% 
    arrange(gdpPercap)
 ```
+
+You can use `unclass` to determine which integers represent which levels for a factor class variable. Helpful for troubleshooting characters vs. factors and the messes they can get you into...
+```{r unclass ex}
+# Create a new dataframe from subset of gapminder
+mini_gap <- gapminder %>% 
+  filter(country %in% c("Belgium", "Canada", "United States", "Mexico"), year > 2000) %>% 
+  select(-pop, -gdpPercap) %>% 
+  droplevels()
+
+# Use unclass to see how R represents the country levels internally
+unclass(mini_gap$country)
+```
+
+To name something (especially in a function) use `setNames`. If used in a function, do this **LAST** as it will both set the names of the object and then RETURN the object. See example under ?setNames.

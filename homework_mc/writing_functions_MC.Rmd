@@ -2,8 +2,7 @@
 title: "Functions in R"
 author: "Michelle Coombe"
 date: "13/02/2020"
-output: html_document:
-  keep_md: TRUE
+output: github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -14,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(gapminder)
 ```
+Notes in this document are primarily from the original [stat545](https://stat545.com/functions-part1.html), but also from the R for Data Science [ebook](https://r4ds.had.co.nz/functions.html), and the newer [ubcstat545](https://stat545guidebook.netlify.com/functional-programming-in-r-part-i.html).
 
 ## Write your own Functions, part 1
 Insert notes on stopifnot and informative error messages

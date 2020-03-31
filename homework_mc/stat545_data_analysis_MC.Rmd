@@ -565,3 +565,77 @@ To find out how many periods fall into an interval, you need to use integer divi
 ```{r Integer division with intervals}
 (today() %--% next_year) %/% days(1)
 ```
+
+### Chapter 14, 15, and 16 - Combining dfs with bind, join, and lookup
+You should be cautious when binding rows that the columns are aligned and the data in each column is the same type. Use `dplyr::bind_rows`, which looks for these issues (unlike `base::rbind`). You should **ALWAYS** inspect the results.
+
+Avoid column binding in particular as it is difficult to know if the rows are exactly aligned - this is YOUR JOB as the data analyst if you use functions like `dplyr::bind_cols`. Or there is the standalone `tibble::add_column`, which just adds a column! With data frames, it is much better to use dplyr's `mutate` or tidyr's `seperate` as they use mechanisms to ensure row alignment is definitely correct. And actually a join is probably the gold standard of how to add columns to a dataframe (or table), from another dataframe (or table). Take home as per JB: column bind only if you must and be extremely paranoid!!!!
+
+Joins - a good summary of which function does what is on the second page of the dplyr data wrangling cheat sheet from RStudio [here](https://4.files.edl.io/b9e2/07/12/19/142839-a23788fb-1d3a-4665-9dc4-33bfd442c296.pdf). 
+
+* Note that a `semi_join` is a filtering join, meaning that—although they both return all rows from `x` that have matching values in `y`—it differs from an `inner_join` because an inner join will duplicate `x` across rows of matching `y`, while `semi_join` will never duplicate `x`. This is useful to sanity check your joins by seeing what **will** be joined.
+
+* Don't forget that you can use another filtering join (`anti_join`) as a way to find all rows in `x` that do not have a matching value in `y` (keeping only columns in `x`). This is very handy for sanity checking your joins to see what **will not** be joined.
+
+Lookup is a special case of join where there is one dataframe (or table) and one vector. This mimics Excel's `LOOKUP()` function. It uses the `match(x, table)` function, where values in the key `x` appear in the lookup variable `table`. In table lookup, there is also always a variable `y` (used to index with the `match(x, table)` results). The `y` needs to be the same length and same row order as `table` and typically resides in the same data frame (or table) as `table`.
+
+* Note `match` returns **indices** (i.e. positive integers) and assumes both `x` and `table` are free-range vectors (i.e. not in a data frame).
+
+* `match` also allows for multiple matches by only consulting the first.
+
+Steps for replicating Excel's `LOOKUP` function using match are listed below. Note that in this case, we've just replicated what `inner_join` does, but there are times when it is useful to it this way.
+
+* 1) Use match to get a vector of indices.
+
+* 2) Double check it makes sense (and you haven't reversed x and table, which is easy to do) by adding an 'x' column to the original dataframe, from your index and table values and printing it to the console. Note that this just lives in the console (or make a test data frame if it's too large); do NOT need to add this to your main table!
+
+* 3) Once you've sanity checked it looks accurate, do the table lookup and add the new info (as applicable) to your main table.
+```{r Lookup example}
+# Create a new dataframe from subset of gapminder
+mini_gap <- gapminder %>% 
+  filter(country %in% c("Belgium", "Canada", "United States", "Mexico"), year > 2000) %>% 
+  select(-pop, -gdpPercap) %>% 
+  droplevels()
+
+# Make a dataframe of sterotypical national foods. Note there is no Mexico here!
+food <- tribble(
+          ~country, ~food,
+          "Belgium", "waffle",
+          "Canada", "poutine",
+          "United States", "Twinkie"
+)
+
+### How to lookup a national food 
+# i) use match to get a vector of indices
+(indices <- match(x = mini_gap$country, 
+                  table = food$country))
+
+# ii) Double check it makes sense (and you haven't reversed x and table)
+  #by adding an 'x' column to the original dataframe, from your index and table values
+  #Note that this just lives in the console or make a test data frame; NOT your main table!
+add_column(food[indices, ], x = mini_gap$country)
+
+# iii) Once you've sanity checked it looks accurate, do the table lookup
+  #and add the new info (as applicable) to your main table
+mini_gap %>% 
+  mutate(food = food$food[indices])
+```
+Another way to use lookups is with a named character vector. However, remember that factors are indexed by **INTEGERS** under the hood, so you need to make sure that both character vectors really are of character class!!!
+```{r Lookup example with factors and characters}
+# Make a named character vector for foods
+(food_vec <-setNames(food$food, food$country))
+
+# Wrong way...using factors instead of characters
+mini_gap %>% 
+  mutate(food = food_vec[country])
+  #Twinkie is NOT the national food of Mexico!!!
+
+#Oh this is how the factors are represented under the hood!
+  #it's just a coincidence that Belgium and Canada get the right foods
+unclass(mini_gap$country)
+
+#Correct way...cooerce country to a character class first.
+mini_gap %>% 
+  mutate(food = food_vec[as.character(country)])
+```
+
