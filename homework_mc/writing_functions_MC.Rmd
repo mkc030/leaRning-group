@@ -15,6 +15,125 @@ library(gapminder)
 ```
 Notes in this document are primarily from the original [stat545](https://stat545.com/functions-part1.html), but also from the R for Data Science [ebook](https://r4ds.had.co.nz/functions.html), and the newer [ubcstat545](https://stat545guidebook.netlify.com/functional-programming-in-r-part-i.html).
 
+## Random notes to help understand how R works with functions
+
+### Indexing and data flavors
+Using square brackets to isolate elements of a vector = indexing. Index value begin at '1' in R, which seems obvious, but apparently most other languages start at '0'. 
+
+Most operations in R are *vectorized*, meaning that by default they will happen component-wise when given a vector as an input. This is very useful to understand as it avoids a lot of unnecessary `for` loops!
+```{r Vectorizing ex}
+x <-  1:4
+
+#Vectorized version of squaring 'x'
+(y <- x^2)
+
+#For loop version of squaring 'x'
+  #Need something for the results of the for loop to be placed into
+z <- vector(mode = mode(x), length = length(x))
+z
+
+for (i in seq_along(x)) {
+  z[i] <- x[i]^2
+}
+
+#These end up with the same result
+identical(y, z)
+```
+
+However, be unaware of vectorizing can also lead to traps, as (a) it can lead to unexpected results if you don't intend for this behaviour, and (b) it means that R will recycle vectors if they are not of the necessary length. It is good practice to check your R objects to make sure they are what you expect in terms of outputs, flavors, and length/dimensions!
+```{r Recycling vectors}
+(y <-  1:3)
+(z <- 3:7)
+
+y + z #R will warn you of uneven lengths here
+
+(y <- 1:10)
+(z <- 3:7)
+
+y + z #But not here...I think because length(y) is a multiple of length(z)...but this is bad news!
+```
+
+**Lists:** Lists are like a vector but do not require that the elements are of the same flavor Data frames are a special case of a list where each element is an atomic vector, and all elements have the same length. Many functions will return lists to you and you will want to get at the list's innards. The components of a list also have names, and you can create or change names using the `names` function. 
+
+Extracting elements from a list. See R for Data Science's [condiments](https://r4ds.had.co.nz/vectors.html#lists-of-condiments) section for great visual overview (also section 20.5.2 above the pepper shaker bit is quite useful too). Note that you have to use the double bracket approach, as opposed to the dollar sign, when the indexing object itself is an R object (eg "iWantThis" in the example below. Additionally, if you want more than one element, you must use vector-style indexing with **single** square brackets: this will always return another list (even if you request only 1 element). If you subset using double square brackets (for ONE element) you will be the flavor of that element.
+
+Summary of how to extract using square brackets:
+
+* x[1] returns the first element (eg data frame) in a list, still surrounded by a list wrapper
+
+* x[[1]] returns only the first element (eg the data frame itself), without a list wrapper
+
+* x[[1]][1] returns the first element of the data frame within our list, surrounded by a list wrapper
+
+* x[[1]][[1]] returns the first element of the data frame within our list, without the list or data frame wrappers
+```{r examples of how to extract elements from a list}
+(a <- list(veg = c("cabbage", "eggplant"),
+           tNum = c(pi, exp(1), sqrt(2)),
+           myAim = TRUE,
+           joeNum = 2:6))
+
+# Explore this list
+str(a)
+length(a)
+class(a)
+mode(a) #Note this tells you the STORAGE mode, not the statistical mode!!!!
+
+#Ways to get to a single element
+a[[2]]    #index with a positive integer
+a$myAim   #use dollar sign and element name
+str(a$myAim) #we get myAim itself, a length of 1 logical vector
+a[["tNum"]]  #index with a length 1 character vector
+str(a[["tNum"]])  #we get tNum itself, a length 3 numeric vector
+iWantThis <- "joeNum"  #indexing with a length 1 character object
+a[[iWantThis]]  #we get joeNum itself, a length 5 integer vector
+a[[c("joeNum", "veg")]]  #This does NOT work!!! Can't get >1 elements!!!
+
+#Ways to get multiple elements
+names(a)
+a[c("tNum", "veg")]   #indexing by length 2 character vector
+str(a[c("tNum", "veg")])  #Returns a list of length 2
+str(a["veg"])   #returns a list of length 1
+length(a["veg"])
+length(a["veg"][[1]])  #contrast with the length of the veg vector itself
+```
+
+**Matrices:** A matrix is an alternative to data frames for storing rectangular data. Matrices are generalizations of atomic vectors, so all elements must be of the same class. Indexing is similar to that of a vector or a list, except that you can use `[i, j]`, where `i` = row and `j` = column. You can fill a matrix with a vector, by giving row and column numbers (and names) at creation. If the input vector is not long enough, R will recycle it.
+```{r making matrices from vectors}
+matrix(1:15, nrow = 5)
+matrix("yo!", nrow = 3, ncol = 6)
+matrix(c("yo!", "foo?"), nrow = 3, ncol = 6)
+matrix(1:15, nrow = 5, byrow = TRUE)
+matrix(1:15, nrow = 5,
+       dimnames = list(paste0("row", 1:5),
+                       paste0("col", 1:3)))
+```
+
+Note that if your elements are not of the same flavor, it may either convert everything to the lowest common flavor (usually character), or you will either get an error, or R can silently fail. This is why it is really important to understand the data flavors in your objects!!!
+```{r }
+multiDat <- data.frame(vec1 = 5:1,
+                       vec2 = paste0("hi", 1:5))
+str(multiDat)
+(multiMat <- as.matrix(multiDat))
+str(multiMat)  #Oh bad news - first element is now just 'NULL' instead of integers...
+```
+
+Table of atomic R object flavors (very handy!!!)
+```{r atomic R object flavors}
+#  +-----------+---------------+-----------+-----------+
+#  | "flavor"  | type reported | mode()    | class()   |
+#  |           | by typeof()   |           |           |
+#  +===========+===============+===========+===========+
+#  | character | character     | character | character |
+#  +-----------+---------------+-----------+-----------+
+#  | logical   | logical       | logical   | logical   |
+#  +-----------+---------------+-----------+-----------+
+#  | numeric   | integer       | numeric   | integer   |
+#  |           | or double     |           | or double |
+#  +-----------+---------------+-----------+-----------+
+#  | factor    | integer       | numeric   | factor    |
+#  +-----------+---------------+-----------+-----------+
+```
+
 ## Write your own Functions, part 1
 Insert notes on stopifnot and informative error messages
 
