@@ -16,7 +16,7 @@ options(digits=3)
 ### Overleaf
 This is an online LaTeX writing and publishing tool, and has different modes depending on your expertise level with LaTeX. https://www.overleaf.com/for/authors Free for personal use :) It does however, only generate a PDF rather than a word doc, which can be an issue for submitting to certain journals.
 
-## Useful math and summarizing functions
+## Useful math, stats, and summarizing functions
 
 #### Determining the minimium of multiple numbers in a vector
 Min() or max() give you ONE output for a vector, while pmin() or pmax() can give you MULTIPLE  outputs, depending on the length of the input. From ?pmin help documentation:
@@ -37,10 +37,21 @@ tdata$end_source[which(is.na(tdata$end_source))]=tdata$symptom_onset[which(is.na
 tdata$end_source = pmin(tdata$end_source, tdata$symptom_onset) # if end exposure after onset, set to onset 
 ```
 
+#### Getting stats info out of plot objects
+You can get info out of (?some) plot objects without plotting it
+For example, to get the 5 number summary from a boxplot (numbers between 0 and 100 rather than 0 and 1)
+```{r boxplot summary}
+boxplot(gapminder$lifeExp, plot = F)$stats
+```
+Cool!!! Good to remember that making the graph is actually a (desired) side effect of making the boxplot object
+
+
 ## Useful data wrangling functions
 
+#### Moving around columns in your data frame
 Move one (or a few) column to the front of your dataframe. For instance, you just joined data and you want the sample ID, date and wetland as the first three columns to make it easier to read when extracting certain rows or something. Use `dplyr::select(special_var, everything())`, where `special_var` would be 'sampleID' or 'c(sampleID, date_col, wtld)' or whatever is the column you want first.
 
+#### Filtering to multiple rows based on min or max ranks
 To get rows from a dataframe with the minimum or maxium value (based on rank) of a certain variable - use dplyr's `min_rank` in combination with `filter`. The advantage is that you don't just get the sole minimum or maximum rank (eg with `min` or `max`) but instead can specify the bottom or top of any 'n' value (i.e. top 5). You could also use grouping variables (e.g. country) to get the top/bottom 5 rows within a country for that variable. 
 ```{r min rank ex}
 library(gapminder)
@@ -50,6 +61,7 @@ library(gapminder)
    arrange(gdpPercap)
 ```
 
+#### Determining which integers represent levels of a factor
 You can use `unclass` to determine which integers represent which levels for a factor class variable. Helpful for troubleshooting characters vs. factors and the messes they can get you into...
 ```{r unclass ex}
 # Create a new dataframe from subset of gapminder
@@ -62,4 +74,9 @@ mini_gap <- gapminder %>%
 unclass(mini_gap$country)
 ```
 
+
+#### Renaming
 To name something (especially in a function) use `setNames`. If used in a function, do this **LAST** as it will both set the names of the object and then RETURN the object. See example under ?setNames.
+
+## Useful data visualization functions
+

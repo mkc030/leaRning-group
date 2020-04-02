@@ -17,7 +17,7 @@ Notes in this document are primarily from the original [stat545](https://stat545
 
 ## Random notes to help understand how R works with functions
 
-### Indexing and data flavors
+### Indexing and vectorized operations
 Using square brackets to isolate elements of a vector = indexing. Index value begin at '1' in R, which seems obvious, but apparently most other languages start at '0'. 
 
 Most operations in R are *vectorized*, meaning that by default they will happen component-wise when given a vector as an input. This is very useful to understand as it avoids a lot of unnecessary `for` loops!
@@ -53,7 +53,8 @@ y + z #R will warn you of uneven lengths here
 y + z #But not here...I think because length(y) is a multiple of length(z)...but this is bad news!
 ```
 
-**Lists:** Lists are like a vector but do not require that the elements are of the same flavor Data frames are a special case of a list where each element is an atomic vector, and all elements have the same length. Many functions will return lists to you and you will want to get at the list's innards. The components of a list also have names, and you can create or change names using the `names` function. 
+### Lists: 
+Lists are like a vector but do not require that the elements are of the same flavor Data frames are a special case of a list where each element is an atomic vector, and all elements have the same length. Many functions will return lists to you and you will want to get at the list's innards. The components of a list also have names, and you can create or change names using the `names` function. 
 
 Extracting elements from a list. See R for Data Science's [condiments](https://r4ds.had.co.nz/vectors.html#lists-of-condiments) section for great visual overview (also section 20.5.2 above the pepper shaker bit is quite useful too). Note that you have to use the double bracket approach, as opposed to the dollar sign, when the indexing object itself is an R object (eg "iWantThis" in the example below. Additionally, if you want more than one element, you must use vector-style indexing with **single** square brackets: this will always return another list (even if you request only 1 element). If you subset using double square brackets (for ONE element) you will be the flavor of that element.
 
@@ -86,7 +87,7 @@ a[["tNum"]]  #index with a length 1 character vector
 str(a[["tNum"]])  #we get tNum itself, a length 3 numeric vector
 iWantThis <- "joeNum"  #indexing with a length 1 character object
 a[[iWantThis]]  #we get joeNum itself, a length 5 integer vector
-a[[c("joeNum", "veg")]]  #This does NOT work!!! Can't get >1 elements!!!
+# a[[c("joeNum", "veg")]]  #This does NOT work!!! Can't get >1 elements!!! Can't knit with the operation either...
 
 #Ways to get multiple elements
 names(a)
@@ -97,7 +98,8 @@ length(a["veg"])
 length(a["veg"][[1]])  #contrast with the length of the veg vector itself
 ```
 
-**Matrices:** A matrix is an alternative to data frames for storing rectangular data. Matrices are generalizations of atomic vectors, so all elements must be of the same class. Indexing is similar to that of a vector or a list, except that you can use `[i, j]`, where `i` = row and `j` = column. You can fill a matrix with a vector, by giving row and column numbers (and names) at creation. If the input vector is not long enough, R will recycle it.
+### Matrices and data flavors: 
+A matrix is an alternative to data frames for storing rectangular data. Matrices are generalizations of atomic vectors, so all elements must be of the same class. Indexing is similar to that of a vector or a list, except that you can use `[i, j]`, where `i` = row and `j` = column. You can fill a matrix with a vector, by giving row and column numbers (and names) at creation. If the input vector is not long enough, R will recycle it.
 ```{r making matrices from vectors}
 matrix(1:15, nrow = 5)
 matrix("yo!", nrow = 3, ncol = 6)
@@ -118,7 +120,18 @@ str(multiMat)  #Oh bad news - first element is now just 'NULL' instead of intege
 ```
 
 Table of atomic R object flavors (very handy!!!)
+*Note the following will look great when rendered with pandoc but terrible in html, but is a good example of how to make a text table with centered values*
+|:---------:|:-------------:|:---------:|:---------:|
+| "flavor"  | type reported | mode()    | class()   |
+|           | by typeof()   |           |           |
+| character | character     | character | character |
+| logical   | logical       | logical   | logical   |
+| numeric   | integer       | numeric   | integer   |
+|           | or double     |           | or double |
+| factor    | integer       | numeric   | factor    |
+
 ```{r atomic R object flavors}
+# Legible in any format
 #  +-----------+---------------+-----------+-----------+
 #  | "flavor"  | type reported | mode()    | class()   |
 #  |           | by typeof()   |           |           |
@@ -134,20 +147,43 @@ Table of atomic R object flavors (very handy!!!)
 #  +-----------+---------------+-----------+-----------+
 ```
 
-## Write your own Functions, part 1
+## Outline for writing your own function
+When to write a function? The general rule of thumb seems to be if you've copied and pasted code 3 or more times. Yes, copy and paste is fast, but it is also WAY more prone to unnotice errors and will cause headaches down the line!!!
+
+The process for writing a function follows the idea of building a minimum viable product: a limited-but-functioning thing is still very useful and easier to build into a more complex thing than just building the more complex thing straight from scratch. 
+
+General steps are as follows:
+
+1. Develop some working, interactive code. 
+
+  i) This means that you start with a **simple** problem (or multiple simple problems). It is really important that you know what to expect for your output (e.g. data flavor, length, possible values)!!!
+  
+  ii) Then develop a working snippet of code that solves this problem(s). 
+  
+  iii) Test the snippet of code with test data, including some unexpected values (e.g. NAs, values outside of expected range, different flavors of data, different data types (vector vs data frame vs list)). This will give you an idea of when/where it might fail and if it fails, what you expect it to do. More on testing later.
+
+2. Rewrite your snippet of code to use temporary variables. These temporary variables should be used where elements of code are repeated and/or when inputs are needed. Make sure to use **clear** names, not just a letter (in most cases) as it makes trouble-shooting down the line more difficult and readability for other users (i.e. future you!) much more difficult.
+
+3. Re-write your code for clarity.
+
+4. NOW turn your code snippet into a function by adding the `function(arguments) {}` part. Recall that the value of the last evaluated expression will be returned; however, if you call `return` within the function, that expression will be evaluated, the value returned, and the function will stop here (so **careful** if/where you use return calls!!!)
+
+5. Test that new function! 
+
+  i) Use on some test data that mimics your intended data and where you (roughly) know what it should return.
+  
+  ii) Use on real data but *different* real data (e.g. other similar flavor variables in your dataset, an entirely different dataset with similar flavors of variables or data types like data frame or lists).
+  
+  iii) Use on weird stuff. Here you are trying to break your function. Use NAs, values outside of range, different flavors, different data types. 
+  
+6. Based on results of step 5, ensure your function fails noisily and as soon as possible and insert informative error messages. See section below. Also note that you can skip this step if you are not intending to re-use your function; no sense in just making extra work for yourself.
+
+## Making functions fail and writing informative error messages
 Insert notes on stopifnot and informative error messages
 
 Insert notes how to do validity checks on your functions to make sure they are doing what you think they are (see part 1 and part 2 examples)
 And how to make them fail in expected ways
 
-## Write your own Functions, part 2
-#### Tangent
-You can get info out of (?some) plot objects without plotting it
-For example, to get the 5 number summary from a boxplot (numbers between 0 and 100 rather than 0 and 1)
-```{r boxplot summary}
-boxplot(gapminder$lifeExp, plot = F)$stats
-```
-Cool!!! Good to remember that making the graph is actually a (desired) side effect of making the boxplot object
 
 Notes on generalizing functions
 
