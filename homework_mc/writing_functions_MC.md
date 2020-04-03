@@ -1,7 +1,7 @@
 Functions in R
 ================
 Michelle Coombe
-13/02/2020
+2020-04-03
 
 ### Load libraries and data
 
