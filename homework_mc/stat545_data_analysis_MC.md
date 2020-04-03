@@ -1,6 +1,7 @@
 Notes on Data Analysis chapters from stat545.com
 ================
 Michelle Coombe
+2020-04-03
 
 # Overview of document
 

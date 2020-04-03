@@ -1,6 +1,7 @@
 ---
 title: "Notes on Data Analysis chapters from stat545.com"
 author: "Michelle Coombe"
+date: "`r Sys.Date()`"
 output: github_document
 #params:
 #  date: !r Sys.Date()
