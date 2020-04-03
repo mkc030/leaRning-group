@@ -365,9 +365,227 @@ h_age
 
 A difftime class object records a time span of seconds, minutes, hours, days, or weeks. This ambiguity can make difftimes a little painful to work with, so lubridate provides an alternative which always uses seconds: the duration.
 
+Durations come with a bunch of convenient constructors:
+
 ```{r}
 as.duration(h_age)
 #> [1] "1270339200s (~40.25 years)"
+
+dseconds(15)
+#> [1] "15s"
+dminutes(10)
+#> [1] "600s (~10 minutes)"
+dhours(c(12, 24))
+#> [1] "43200s (~12 hours)" "86400s (~1 days)"
+ddays(0:5)
+#> [1] "0s"                "86400s (~1 days)"  "172800s (~2 days)"
+#> [4] "259200s (~3 days)" "345600s (~4 days)" "432000s (~5 days)"
+dweeks(3)
+#> [1] "1814400s (~3 weeks)"
+dyears(1)
+#> [1] "31536000s (~52.14 weeks)"
 ```
 
+You can add and multiply durations:
+
+You can add and subtract durations to and from days:
+
+```{r}
+2 * dyears(1)
+#> [1] "63072000s (~2 years)"
+dyears(1) + dweeks(12) + dhours(15)
+#> [1] "38847600s (~1.23 years)"
+
+tomorrow <- today() + ddays(1)
+last_year <- today() - dyears(1)
+```
+
+
+
+However, because durations represent an exact number of seconds, sometimes you might get an unexpected result:
+
+```{r}
+one_pm <- ymd_hms("2016-03-12 13:00:00", tz = "America/New_York")
+
+one_pm
+#> [1] "2016-03-12 13:00:00 EST"
+one_pm + ddays(1)
+#> [1] "2016-03-13 14:00:00 EDT"
+
+```
+WHY? ---> Why is one day after 1pm on March 12, 2pm on March 13?! If you look carefully at the date you might also notice that the time zones have changed. Because of DST, March 12 only has 23 hours, so if we add a full days worth of seconds we end up with a different time.
+
+_That is why lubridate offers the options to work in periods which uses "human" time_
+
+####16.4.2 Periods
+PEriods have a fixed time but tey do not work in seconds but in human time. More intuitive for many applications (notice that the function only changes slightly days() vs ddays())
+
+```{r}
+one_pm
+
+one_pm + days(2)
+```
+Like durations, periods can be created with a number of friendly constructor functions.
+
+```{r}
+seconds(15)
+#> [1] "15S"
+minutes(10)
+#> [1] "10M 0S"
+hours(c(12, 24))
+#> [1] "12H 0M 0S" "24H 0M 0S"
+days(7)
+#> [1] "7d 0H 0M 0S"
+months(1:6)
+#> [1] "1m 0d 0H 0M 0S" "2m 0d 0H 0M 0S" "3m 0d 0H 0M 0S" "4m 0d 0H 0M 0S"
+#> [5] "5m 0d 0H 0M 0S" "6m 0d 0H 0M 0S"
+weeks(3)
+#> [1] "21d 0H 0M 0S"
+years(1)
+#> [1] "1y 0m 0d 0H 0M 0S"
+```
+
+You can add and multiply periods:
+
+```{r}
+10 * (months(8) + days(24))
+
+days(73) + hours(15) + minutes(189) 
+            
+```
+And of course, add them to dates. Compared to durations, periods are more likely to do what you expect:
+```{r}
+# A leap year
+ymd("2016-01-01") + dyears(1)
+#> [1] "2016-12-31"
+ymd("2016-01-01") + years(1)
+#> [1] "2017-01-01"
+
+# Daylight Savings Time
+one_pm + ddays(1)
+#> [1] "2016-03-13 14:00:00 EDT"
+one_pm + days(1)
+#> [1] "2016-03-13 13:00:00 EDT"
+```
+
+
+
+Let’s use periods to fix an oddity related to our flight dates. Some planes appear to have arrived at their destination before they departed from New York City.
+
+```{r}
+flights_dt %>% filter (arr_time < dep_time)
+
+```
+
+
+Fixing it
+```{r}
+flights_dt <- flights_dt %>% 
+  mutate(
+    overnight = arr_time < dep_time,
+    arr_time = arr_time + days(overnight * 1),
+    sched_arr_time = sched_arr_time + days(overnight * 1)
+  )
+
+flights_dt %>% 
+  filter(overnight, arr_time < dep_time) 
+
+```
+
+####16.4.3 Intervals
+dyears(1)/ddays(365) shoudl return 1!
+But years(1)/days(365) it depends on the specific year
+That's why
+
+```{r}
+years(1) / days(1)
+```
+
+INTERVAL is a duration wih an specific starting point
+If you want a more accurate measurement, you’ll have to use an interval.
+
+```{r}
+next_year <- today() + years(1)
+(today() %--% next_year) / ddays(1)
+
+```
+
+
+
+To find out how many periods fall into an interval, you need to use integer division:
+
+```{r}
+(today() %--% next_year) %/% days(1)
+```
+
+###16.5 Time zones
+Time zones are an enormously complicated topic because of their interaction with geopolitical entities. 
+To avoid confusion, R uses the international standard IANA time zones. These use a consistent naming scheme “/”, typically in the form “<continent>/<city>” (there are a few exceptions because not every country lies on a continent). Examples include “America/New_York”, “Europe/Paris”, and “Pacific/Auckland”. They use names as city names are more stable than time zones names. 
+
+You can find out what R thinks your current time zone is with
+
+```{r}
+Sys.timezone()
+#> [1] "UTC"
+```
+
+And see the complete list of all time zone names with
+```{r}
+length(OlsonNames())
+#> [1] 607
+head(OlsonNames())
+#> [1] "Africa/Abidjan"     "Africa/Accra"       "Africa/Addis_Ababa"
+#> [4] "Africa/Algiers"     "Africa/Asmara"      "Africa/Asmera"
+```
+
+In R, the time zone is an attribute of the date-time that only controls printing. For example, these three objects represent the same instant in time:
+
+```{r}
+(x1 <- ymd_hms("2015-06-01 12:00:00", tz = "America/New_York"))
+#> [1] "2015-06-01 12:00:00 EDT"
+(x2 <- ymd_hms("2015-06-01 18:00:00", tz = "Europe/Copenhagen"))
+#> [1] "2015-06-01 18:00:00 CEST"
+(x3 <- ymd_hms("2015-06-02 04:00:00", tz = "Pacific/Auckland"))
+#> [1] "2015-06-02 04:00:00 NZST"
+```
+
+_Unless otherwise specified, lubridate always uses UTC. UTC (Coordinated Universal Time) is the standard time zone used by the scientific community and roughly equivalent to its predecessor GMT (Greenwich Mean Time)_
+
+Operations that combine date-times, like c(), will often drop the time zone. In that case, the date-times will display in your local time zone:
+
+```{r}
+x4 <- c(x1, x2, x3)
+x4
+```
+_I DO NOT UNDERSTAND WHY IT SHOWS EDT, given what the book says it should be my local time Vancouver_
+
+You can change the time zone in two ways (using wiht_tz() or force_tz()):
+
+*Keep the instant in time the same, and change how it’s displayed. Use this when the instant is correct, but you want a more natural display.
+
+
+```{r}
+
+x4a <- with_tz(x4, tzone = "Australia/Lord_Howe")
+x4a
+#> [1] "2015-06-02 02:30:00 +1030" "2015-06-02 02:30:00 +1030"
+#> [3] "2015-06-02 02:30:00 +1030"
+x4a - x4
+#> Time differences in secs
+#> [1] 0 0 0
+
+```
+(This also illustrates another challenge of times zones: they’re not all integer hour offsets!)
+
+*Change the underlying instant in time. Use this when you have an instant that has been labelled with the incorrect time zone, and you need to fix it.
+
+```{r}
+x4b <- force_tz(x4, tzone = "Australia/Lord_Howe")
+x4b
+#> [1] "2015-06-01 12:00:00 +1030" "2015-06-01 12:00:00 +1030"
+#> [3] "2015-06-01 12:00:00 +1030"
+x4b - x4
+#> Time differences in hours
+#> [1] -14.5 -14.5 -14.5
+```
 
