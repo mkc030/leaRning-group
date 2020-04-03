@@ -20,9 +20,9 @@ I have skimmed over and ignored most of the intro stuff, but the most useful sec
 ### Shortcuts
 Typing a command in parentheses will automatically print the object/command to the console.
 
-Assignment operator (think "gets" when you see the arrow) for mac is: option + dash
+Assignment operator (think "gets" when you see the arrow) for mac is: `option + dash`
 
-Pipe operator (think "then" when you see the symbol) for mac is: command + shift + m
+Pipe operator (think "then" when you see the symbol) for mac is: `command + shift + m`
 
 ### Import data and packages
 ```{r import, echo=FALSE}
@@ -248,11 +248,11 @@ Regular expression resources:
 
 * The [Strings chapter](https://r4ds.had.co.nz/strings.html) of R for Data Science ebook. Also a good resource for looking up how to use groups and backreferences, which are not discussed here.
 
-* `rex` R package, as it uses
+* `rex` R package, as it uses more human friendly languate to make regular expressions. Use `names(shortcuts)` to see the full list of available shortcuts and then use inside of `rex()` to generate the equivalent regular expression. I can't find a great easy example of how to use it, but there are a couple of more complicated vignettes that might help if looking into this wrt [webserver log parsing](https://rpubs.com/jimhester/rex-log_parsing) and [url validation](https://rpubs.com/jimhester/rex-url_parsing).
 
 * baseR (`grep`, `grepl`, etc)
 
-* REgex testers to see if your regular expression will actually work on a test string of your devising: [regex101](https://regex101.com) (This one has a very friendly interface for beginner users) and [regexr](https://regexr.com) (probably just as good but looks a little more daunting?)
+* Regex testers to see if your regular expression will actually work on a test string of your devising: [regex101](https://regex101.com) (This one has a very friendly interface for beginner users) and [regexr](https://regexr.com) (probably just as good but looks a little more daunting?)
 
 #### Stringr functions - overview
 Useful stringr functions:
@@ -390,7 +390,8 @@ str_subset(fruit, pattern = "\\Bmelon")
 cat("Do you use \"airquotes\" much?")
 
 # Spliting using a human-readable character string
-str_split_fixed(fruit, pattern = " ", n = 2)
+head(str_split_fixed(fruit, pattern = " ", n = 2), n = 10) 
+    #If don't use 'head', this will return 80 lines!
 
 # Spliting using a metacharacter
 str_split_fixed(my_fruit, pattern = "\\s", n = 2)
@@ -493,6 +494,7 @@ flights_dt %>%
     geom_bar()
 
 ```
+
 You can set/edit components of a date/time using those same accessor functions (eg `month`). Likely even more useful is the `update` function, which creates a NEW object and allows you set multiple values at once, and will rollover values that are too big. This can be useful in setting larger components of a date to a constant so that you can explore patterns in the smaller components; for instance, to show the distribution of flights over the course of a day for every day of the year, as below.
 ```{r editing dates}
 (datetime <- ymd_hms("2016-07-18 12:34:56"))
@@ -552,6 +554,7 @@ one_pm <- ymd_hms("2016-03-12 13:00:00", tz = "America/New_York")
 one_pm + ddays(1)
 one_pm + days(1)
 ```
+
 **INTERVALS**
 An interval is a duration with a starting point and an end point, this makes it precise so you can determine exactly how long it is. You make an interval using the `%--%` operator.
 ```{r Intervals vs Periods}
@@ -621,6 +624,7 @@ add_column(food[indices, ], x = mini_gap$country)
 mini_gap %>% 
   mutate(food = food$food[indices])
 ```
+
 Another way to use lookups is with a named character vector. However, remember that factors are indexed by **INTEGERS** under the hood, so you need to make sure that both character vectors really are of character class!!!
 ```{r Lookup example with factors and characters}
 # Make a named character vector for foods
