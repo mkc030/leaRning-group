@@ -10,14 +10,14 @@ Chapter 13 Dates and Times
 library(tidyverse)
 ```
 
-    ## ── Attaching packages ────────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
+    ## ── Attaching packages ─────────────────────────────────────────────────────────────── tidyverse 1.3.0 ──
 
     ## ✔ ggplot2 3.2.1     ✔ purrr   0.3.3
     ## ✔ tibble  2.1.3     ✔ dplyr   0.8.3
     ## ✔ tidyr   1.0.0     ✔ stringr 1.4.0
     ## ✔ readr   1.3.1     ✔ forcats 0.4.0
 
-    ## ── Conflicts ───────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+    ## ── Conflicts ────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
     ## ✖ dplyr::filter() masks stats::filter()
     ## ✖ dplyr::lag()    masks stats::lag()
 
@@ -42,7 +42,7 @@ Get times! Lubridate, and Rbase
 today()
 ```
 
-    ## [1] "2020-03-19"
+    ## [1] "2020-04-02"
 
 ``` r
 #lubridate
@@ -50,7 +50,7 @@ today()
 Sys.Date()
 ```
 
-    ## [1] "2020-03-19"
+    ## [1] "2020-04-02"
 
 ``` r
 #Base R
@@ -58,7 +58,7 @@ Sys.Date()
 str(Sys.Date())
 ```
 
-    ##  Date[1:1], format: "2020-03-19"
+    ##  Date[1:1], format: "2020-04-02"
 
 ``` r
 class(Sys.Date())
@@ -70,7 +70,7 @@ class(Sys.Date())
 Sys.time()
 ```
 
-    ## [1] "2020-03-19 21:01:28 PDT"
+    ## [1] "2020-04-02 21:17:23 PDT"
 
 ``` r
 #Rbase
@@ -78,7 +78,7 @@ Sys.time()
 now()
 ```
 
-    ## [1] "2020-03-19 21:01:28 PDT"
+    ## [1] "2020-04-02 21:17:23 PDT"
 
 ``` r
 #Lubridate
@@ -87,7 +87,7 @@ now()
 str(Sys.time())
 ```
 
-    ##  POSIXct[1:1], format: "2020-03-19 21:01:28"
+    ##  POSIXct[1:1], format: "2020-04-02 21:17:23"
 
 ``` r
 class(Sys.time())
@@ -99,7 +99,7 @@ class(Sys.time())
 str(now())
 ```
 
-    ##  POSIXct[1:1], format: "2020-03-19 21:01:28"
+    ##  POSIXct[1:1], format: "2020-04-02 21:17:23"
 
 ``` r
 class(now())
@@ -255,14 +255,14 @@ Sometimes you’ll get date/times as numeric offsets from the “Unix Epoch”, 
 as_datetime(today())
 ```
 
-    ## [1] "2020-03-19 UTC"
+    ## [1] "2020-04-02 UTC"
 
 ``` r
 #> [1] "2020-01-15 UTC"
 as_date(now())
 ```
 
-    ## [1] "2020-03-19"
+    ## [1] "2020-04-02"
 
 ``` r
 #> [1] "2020-01-15"
@@ -285,3 +285,337 @@ as_date(365 * 10 + 2)
 ```
 
 ### 16.2.4 Exercises
+
+1.  What happens if contains invalid dates?
+
+``` r
+ymd(c("2010-10-10", "bananas"))
+```
+
+    ## Warning: 1 failed to parse.
+
+    ## [1] "2010-10-10" NA
+
+1.  What does the tzone argument to today() do? Why is it important? It specifies the time zone. The default is the computer's time zone
+
+2.  Use the appropriate lubridate function to parse each of the following dates: d1 &lt;- "January 1, 2010" d2 &lt;- "2015-Mar-07" d3 &lt;- "06-Jun-2017" d4 &lt;- c("August 19 (2015)", "July 1 (2015)") d5 &lt;- "12/30/14" \# Dec 30, 2014
+
+``` r
+d1 <- "January 1, 2010"
+mdy(d1)
+```
+
+    ## [1] "2010-01-01"
+
+``` r
+d2 <- "2015-Mar-07"
+ymd(d2)
+```
+
+    ## [1] "2015-03-07"
+
+``` r
+d3 <- "06-Jun-2017"
+dmy(d3)
+```
+
+    ## [1] "2017-06-06"
+
+``` r
+d4 <- c("August 19 (2015)", "July 1 (2015)")
+mdy(d4)
+```
+
+    ## [1] "2015-08-19" "2015-07-01"
+
+``` r
+d5 <- "12/30/14" # Dec 30, 2014
+mdy(d5)
+```
+
+    ## [1] "2014-12-30"
+
+#### 16.3.1 Getting components
+
+You can pull out individual parts of the date with the accessor functions year(), month(), mday() (day of the month), yday() (day of the year), wday() (day of the week), hour(), minute(), and second().
+
+``` r
+datetime <- ymd_hms("2016-07-08 12:34:56")
+
+year(datetime)
+```
+
+    ## [1] 2016
+
+``` r
+month(datetime)
+```
+
+    ## [1] 7
+
+``` r
+mday(datetime)
+```
+
+    ## [1] 8
+
+``` r
+#mday <- day of the month
+
+yday(datetime)
+```
+
+    ## [1] 190
+
+``` r
+# yday <- day of the year
+
+wday(datetime)
+```
+
+    ## [1] 6
+
+``` r
+#wday <- day of the week 
+
+hour(datetime)
+```
+
+    ## [1] 12
+
+``` r
+minute(datetime)
+```
+
+    ## [1] 34
+
+``` r
+second(datetime)
+```
+
+    ## [1] 56
+
+For month() and wday() you can set label = TRUE to return the abbreviated name of the month or day of the week. Set abbr = FALSE to return the full name.
+
+``` r
+month(datetime, label =TRUE, abbr = TRUE)
+```
+
+    ## [1] Jul
+    ## 12 Levels: Jan < Feb < Mar < Apr < May < Jun < Jul < Aug < Sep < ... < Dec
+
+``` r
+month(datetime, label =TRUE, abbr = FALSE)
+```
+
+    ## [1] July
+    ## 12 Levels: January < February < March < April < May < June < ... < December
+
+``` r
+wday(datetime, label = TRUE, abbr = TRUE)
+```
+
+    ## [1] Fri
+    ## Levels: Sun < Mon < Tue < Wed < Thu < Fri < Sat
+
+``` r
+wday(datetime, label = TRUE, abbr = FALSE)
+```
+
+    ## [1] Friday
+    ## 7 Levels: Sunday < Monday < Tuesday < Wednesday < Thursday < ... < Saturday
+
+We can use wday() to see that more flights depart during the week than on the weekend:
+
+``` r
+flights_dt %>% 
+  mutate(wday = wday(dep_time, label = TRUE)) %>% 
+  ggplot(aes(x = wday)) +
+    geom_bar()
+```
+
+![](Chapter13_files/figure-markdown_github/unnamed-chunk-7-1.png)
+
+There’s an interesting pattern if we look at the average departure delay by minute within the hour. It looks like flights leaving in minutes 20-30 and 50-60 have much lower delays than the rest of the hour!
+
+``` r
+flights_dt %>% 
+  mutate(minute = minute(dep_time)) %>% 
+  group_by(minute) %>% 
+  summarise(
+    avg_delay = mean(arr_delay, na.rm = TRUE),
+    n = n()) %>% 
+  ggplot(aes(minute, avg_delay)) +
+    geom_line()
+```
+
+![](Chapter13_files/figure-markdown_github/unnamed-chunk-8-1.png)
+
+Interestingly, if we look at the scheduled departure time we don’t see such a strong pattern:
+
+``` r
+sched_dep <- flights_dt %>% 
+  mutate(minute = minute(sched_dep_time)) %>% 
+  group_by(minute) %>% 
+  summarise(
+    avg_delay = mean(arr_delay, na.rm = TRUE),
+    n = n())
+
+ggplot(sched_dep, aes(minute, avg_delay)) +
+  geom_line()
+```
+
+![](Chapter13_files/figure-markdown_github/unnamed-chunk-9-1.png)
+
+So why do we see that pattern with the actual departure times? Well, like much data collected by humans, there’s a strong bias towards flights leaving at “nice” departure times. Always be alert for this sort of pattern whenever you work with data that involves human judgement!
+
+``` r
+ggplot(sched_dep, aes(minute, n)) +
+  geom_line()
+```
+
+![](Chapter13_files/figure-markdown_github/unnamed-chunk-10-1.png)
+
+#### 16.3.2 Rounding
+
+An alternative approach to plotting individual components is to round the date to a nearby unit of time, with floor\_date(), round\_date(), and ceiling\_date(). Each function takes a vector of dates to adjust and then the name of the unit round down (floor), round up (ceiling), or round to. This, for example, allows us to plot the number of flights per week:
+
+``` r
+flights_dt %>% 
+  count(week = floor_date(dep_time, "week")) %>% 
+  ggplot(aes(week, n)) +
+    geom_line()
+```
+
+![](Chapter13_files/figure-markdown_github/unnamed-chunk-11-1.png)
+
+#### 16.3.3 Setting components
+
+You can also use each accessor function to set the components of a date/time:
+
+``` r
+(datetime <- ymd_hms("2016-07-08 12:34:56"))
+```
+
+    ## [1] "2016-07-08 12:34:56 UTC"
+
+``` r
+#> [1] "2016-07-08 12:34:56 UTC"
+
+year(datetime) <- 2020
+datetime
+```
+
+    ## [1] "2020-07-08 12:34:56 UTC"
+
+``` r
+#> [1] "2020-07-08 12:34:56 UTC"
+month(datetime) <- 01
+datetime
+```
+
+    ## [1] "2020-01-08 12:34:56 UTC"
+
+``` r
+#> [1] "2020-01-08 12:34:56 UTC"
+hour(datetime) <- hour(datetime) + 1
+datetime
+```
+
+    ## [1] "2020-01-08 13:34:56 UTC"
+
+``` r
+#> [1] "2020-01-08 13:34:56 UTC"
+```
+
+Alternatively, rather than modifying in place, you can create a new date-time with update(). This also allows you to set multiple values at once.
+
+``` r
+update(datetime, year = 2020, month = 2, mday = 2, hour = 2)
+```
+
+    ## [1] "2020-02-02 02:34:56 UTC"
+
+``` r
+#> [1] "2020-02-02 02:34:56 UTC"
+```
+
+If values are too big, they will roll-over:
+
+``` r
+ymd("2015-02-01") %>% 
+  update(mday = 30)
+```
+
+    ## [1] "2015-03-02"
+
+``` r
+#> [1] "2015-03-02"
+ymd("2015-02-01") %>% 
+  update(hour = 400)
+```
+
+    ## [1] "2015-02-17 16:00:00 UTC"
+
+``` r
+#> [1] "2015-02-17 16:00:00 UTC"
+```
+
+You can use update() to show the distribution of flights across the course of the day for every day of the year:
+
+``` r
+flights_dt %>% 
+  mutate(dep_hour = update(dep_time, yday = 300)) %>% 
+  ggplot(aes(dep_hour)) +
+    geom_freqpoly(binwidth = 300)
+```
+
+![](Chapter13_files/figure-markdown_github/unnamed-chunk-15-1.png)
+
+### 16.3.4 Exercises TO DO ONCE I TAKE GGPLOT (GOOD EXERCISE)
+
+1 How does the distribution of flight times within a day change over the course of the year?
+
+2 Compare dep\_time, sched\_dep\_time and dep\_delay. Are they consistent? Explain your findings.
+
+3 Compare air\_time with the duration between the departure and arrival. Explain your findings. (Hint: consider the location of the airport.)
+
+4 How does the average delay time change over the course of a day? Should you use dep\_time or sched\_dep\_time? Why?
+
+5 On what day of the week should you leave if you want to minimise the chance of a delay?
+
+6 What makes the distribution of diamonds*c**a**r**a**t**a**n**d**f**l**i**g**h**t**s*sched\_dep\_time similar?
+
+7 Confirm my hypothesis that the early departures of flights in minutes 20-30 and 50-60 are caused by scheduled flights that leave early. Hint: create a binary variable that tells you whether or not a flight was delayed.
+
+### 16.4 Time spans
+
+Next you’ll learn about how arithmetic with dates works, including subtraction, addition, and division. Along the way, you’ll learn about three important classes that represent time spans:
+
+*durations, which represent an exact number of seconds. *periods, which represent human units like weeks and months. \*intervals, which represent a starting and ending point.
+
+In R, when you subtract two dates, you get a difftime object:
+
+``` r
+# How old is Hadley?
+h_age <- today() - ymd(19791014)
+h_age
+```
+
+    ## Time difference of 14781 days
+
+``` r
+#> Time difference of 14703 days
+```
+
+A difftime class object records a time span of seconds, minutes, hours, days, or weeks. This ambiguity can make difftimes a little painful to work with, so lubridate provides an alternative which always uses seconds: the duration.
+
+``` r
+as.duration(h_age)
+```
+
+    ## [1] "1277078400s (~40.47 years)"
+
+``` r
+#> [1] "1270339200s (~40.25 years)"
+```
