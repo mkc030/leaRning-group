@@ -45,6 +45,8 @@ boxplot(gapminder$lifeExp, plot = F)$stats
 ```
 Cool!!! Good to remember that making the graph is actually a (desired) side effect of making the boxplot object
 
+#### Comparing doubles and integers
+Recall that `identical()` is very strict and does not convert between different classes, so `dplyr::near()` may be a better option.
 
 ## Useful data wrangling functions
 #### Printing more lines to console than what it automatically gives you
