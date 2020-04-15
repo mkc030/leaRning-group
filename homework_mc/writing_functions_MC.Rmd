@@ -164,9 +164,17 @@ General steps are as follows:
 
 2. Rewrite your snippet of code to use temporary variables. These temporary variables should be used where elements of code are repeated and/or when inputs are needed. Make sure to use **clear** names, not just a letter (in most cases) as it makes trouble-shooting down the line more difficult and readability for other users (i.e. future you!) much more difficult.
 
+* Use temporary variables for the inputs; you can start with a very short, generic name to see where the inputs are (i.e. 'x') and then re-write the variable names for clarity
+
 3. Re-write your code for clarity.
 
 4. NOW turn your code snippet into a function by adding the `function(arguments) {}` part. Recall that the value of the last evaluated expression will be returned; however, if you call `return` within the function, that expression will be evaluated, the value returned, and the function will stop here (so **careful** if/where you use return calls!!!)
+
+  i) Pick a descriptive name for your function
+  
+  ii) List the inputs (aka arguments) inside the function, for instance `function(x, y, z)`.
+  
+  iii) Place the working snippet of code inside the body of the functions (aka in the `{}` part)
 
 5. Test that new function! 
 
@@ -175,6 +183,8 @@ General steps are as follows:
   ii) Use on real data but *different* real data (e.g. other similar flavor variables in your dataset, an entirely different dataset with similar flavors of variables or data types like data frame or lists).
   
   iii) Use on weird stuff. Here you are trying to break your function. Use NAs, values outside of range, different flavors, different data types. 
+  
+  iv) Use automated tests! See the `testthat` package and the R packages book section on [testing](http://r-pkgs.had.co.nz/tests.html )
   
 6. Based on results of step 5, ensure your function fails noisily and as soon as possible and insert informative error messages. See section below. Also note that you can skip this step if you are not intending to re-use your function; no sense in just making extra work for yourself.
 
