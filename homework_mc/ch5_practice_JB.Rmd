@@ -1,0 +1,83 @@
+---
+title: "Stat545.com Practice"
+output: 
+  word_document:
+    keep_md: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Chapter 5 R Markdown
+
+This is a practice R Markdown document and used for running chapter 5 examples.  
+First, let's start by investigating the power of tidyverse and tibbles.
+
+```{r Chunk title goes here, echo = TRUE}
+library(tidyverse)
+library(gapminder)
+str(gapminder)
+class(gapminder)
+head(gapminder)
+tail(gapminder)
+as_tibble(iris)
+names(gapminder)
+```
+
+<!-- Note that this type of commenting does NOT show up on your final knit document -->
+Note that lenght command returns the number of columns NOT the number of rows
+```{r, echo=TRUE}
+length(gapminder)
+nrow(gapminder)
+ncol(gapminder)
+dim(gapminder)
+```
+
+Let's make a plot with base R graphics
+```{r, echo=FALSE}
+plot(lifeExp ~ year, gapminder)
+hist(gapminder$lifeExp)
+```
+
+Ok, why does the histogram look like it does?
+```{r, echo=TRUE}
+summary(gapminder$year)
+table(gapminder$year)
+class(gapminder$year)
+```
+
+So that was an integer.  
+What about other variables in the dataset? Let's pick a categorical one.  
+*note that this paragraph contains line breaks -which means TWO spaces at the end*  
+*Does it look like it in the rendered doc?*  
+**Still not for some reason...**
+```{r,echo=TRUE}
+class(gapminder$continent)
+summary(gapminder$continent)
+levels(gapminder$continent)
+nlevels(gapminder$continent)
+```
+
+```{r Barplot - graph title, echo=TRUE}
+barplot(table(gapminder$continent))
+```
+Don't forget that R is storing those levels as integers i.e. '1', '2', '3', etc under the hood!!! This will trip up unwary programmers, so don't forget to properly care for your factors. *note that this paragraph was written without line breaks, does it make a difference to the final formatting?*
+
+
+Here is a much nicer ggplot graph
+```{r, echo=TRUE}
+## we exploit the fact that ggplot was installed and loaded via the tidyverse
+p <- ggplot(filter(gapminder, continent != "Oceania"),
+            aes(x = gdpPercap, y = lifeExp)) # just initializes
+p <- p + scale_x_log10() #log the x axis the right way
+p + geom_point() #scatterplot
+p + geom_point(aes(color = continent)) #map the continents to color
+p + geom_point(alpha = (1/3), size = 3) +
+  geom_smooth(lwd = 3, se = F) 
+p + geom_point(alpha = (1/3), size = 3) + 
+  facet_wrap(~continent) +
+  geom_smooth(lwd = 3, se = F) 
+
+```
+That's a wrap for Chapter 5 and practicing with R markdown!!

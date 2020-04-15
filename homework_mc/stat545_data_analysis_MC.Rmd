@@ -141,6 +141,13 @@ gapminder %>%
 
 # Forcats ex
 fct_count(gapminder$continent)
+
+#Or, just how to look at the number of distinct levels of a variable
+n_distinct(gapminder$continent)
+
+#OR, how to see the names of the levels but without the frequency count 
+  #note this has to be a factor, does not work on character class!!!
+levels(gapminder$continent)
 ```
 
 How to drop unused levels - can use either `droplevels()` from base R or `forcats::fct_drop`.
@@ -269,7 +276,7 @@ Useful stringr functions:
 str_split_fixed(my_fruit, pattern = " ", n = 2)
 ```
 
-* `separate` is similar to `str_split` family but works when variable is in a dataframe. Also, very useful in that it will let you enter missing values into columns if there are unequal number of pieces.
+* `separate` is similar to `str_split` family but works when variable is in a dataframe. Also, very useful in that it will let you enter missing values into columns if there are unequal number of pieces. See also examples at the end of `?seperate` for other options on how to deal with rows that don't split into the same number of pieces.
 ```{r spliting 2 - with separate}
 # Without using fill argument (default is to warn and then right fill)
 my_fruit_df <- tibble(my_fruit)
@@ -283,11 +290,25 @@ my_fruit_df %>%
 # With fill argument, left pad
 my_fruit_df %>% 
   separate(my_fruit, into = c("pre", "post"), sep = " ", fill = "left")
+
+# To split based on character location in string (note this will replace the original column)
+library(readxl)
+suppl <- read_excel("/Users/Michelle 1/Documents/R projects/Phase1/Supplementary_Material_ Table S1.xlsx")
+
+splitID_df <- separate(suppl, 
+               col = `Sample ID`,
+               into = c("locationID", "siteID"))
+               
+# To split on location but only return ONE of the split columns (note this will replace the original column)
+splitID_df <- separate(suppl, 
+               col = `Sample ID`,
+               into = c("locationID", NA), #as I don't care about the specific site ID
+               sep = -2)  #the last two number/letter combo are the site ID
 ```
 
 * `str_length` counts the length of each character string within the vector
 
-* `str_sub` lets you snip out substrings based on character position. The start and end arguments are vectorized, meaning they can provide a sliding window (for ex, a sliding 3-character window when using a vector rather than just an integer). It can also be used for replacing substrings when placed on the lefthand side of the assignment operator.
+* `str_sub` lets you snip out substrings based on character position. The start and end arguments are vectorized, meaning they can provide a sliding window (for ex, a sliding 3-character window when using a vector rather than just an integer). It can also be used for replacing substrings when placed on the lefthand side of the assignment operator. This has the potential to be a **very powerful** function I think; see `?str_sub` to look at examples at bottom of help file. Very useful for how to potentially split/save sub-strings from vectors or data frames. 
 ```{r snipping substrings}
 # Based just on a single position
 head(fruit) %>% 
@@ -303,6 +324,17 @@ tibble(fruit) %>%
 (x <- head(fruit, 3))
 str_sub(x, 1, 3) <- "AAA"
 x
+
+# To get a new column with a substring based on character location
+  #This example is removing the LAST two characters at the end of the string
+  #With character strings that are variable in length
+table(str_length(suppl$`Sample ID`)) #Have different no. of characters per sampleIDs
+
+suppl <- suppl %>% 
+          mutate(locationID = str_sub(suppl$`Sample ID`, 
+                                      start = 1, 
+                                      end = nchar(t)-2)) %>%  #note the use of 'nchar' here!!!
+          select(locationID, everything())
 ```
 
 * `str_c` allows you to collapse a vector to a single string. Seems kinda useless but I guess it's mostly useful as a precursor for other operations you might want to do later (i.e. string encoding?). You can also do advanced mode by concatenating multiple element wise, with or without collasping the elements into a single string

@@ -47,9 +47,21 @@ Cool!!! Good to remember that making the graph is actually a (desired) side effe
 
 
 ## Useful data wrangling functions
+#### Printing more lines to console than what it automatically gives you
+You need to make the data frame into a tibble and then use the print function to specify the number of rows. You can also use the options in `print` to change the max number of extra columns to print abbreviated information for if the width of the console isn't wide enough.
+```{r printing more rows}
+# Default max is 20 rows
+print(as.tibble(iris))
+
+# Print 3 rows
+print(as_tibble(iris), n = 3)
+
+# Print 30 rows
+print(as_tibble(iris), n = 30)
+```
 
 #### Moving around columns in your data frame
-Move one (or a few) column to the front of your dataframe. For instance, you just joined data and you want the sample ID, date and wetland as the first three columns to make it easier to read when extracting certain rows or something. Use `dplyr::select(special_var, everything())`, where `special_var` would be 'sampleID' or 'c(sampleID, date_col, wtld)' or whatever is the column you want first.
+Move one (or a few) column to the front of your dataframe. For instance, you just joined data and you want the sample ID, date and wetland as the first three columns to make it easier to read when extracting certain rows or something. Use `dplyr::select(special_var, everything())`, where `special_var` would be 'sampleID' or 'c(sampleID, date_col, wtld)' or whatever is the column you want first. You could also do `dplyr::select(special_var, -everything()` if you want only the `special_var` selected from your data frame. 
 
 #### Filtering to multiple rows based on min or max ranks
 To get rows from a dataframe with the minimum or maxium value (based on rank) of a certain variable - use dplyr's `min_rank` in combination with `filter`. The advantage is that you don't just get the sole minimum or maximum rank (eg with `min` or `max`) but instead can specify the bottom or top of any 'n' value (i.e. top 5). You could also use grouping variables (e.g. country) to get the top/bottom 5 rows within a country for that variable. 
