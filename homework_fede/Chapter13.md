@@ -42,7 +42,7 @@ Get times! Lubridate, and Rbase
 today()
 ```
 
-    ## [1] "2020-04-03"
+    ## [1] "2020-04-18"
 
 ``` r
 #lubridate
@@ -50,7 +50,7 @@ today()
 Sys.Date()
 ```
 
-    ## [1] "2020-04-03"
+    ## [1] "2020-04-18"
 
 ``` r
 #Base R
@@ -58,7 +58,7 @@ Sys.Date()
 str(Sys.Date())
 ```
 
-    ##  Date[1:1], format: "2020-04-03"
+    ##  Date[1:1], format: "2020-04-18"
 
 ``` r
 class(Sys.Date())
@@ -70,7 +70,7 @@ class(Sys.Date())
 Sys.time()
 ```
 
-    ## [1] "2020-04-03 10:21:08 PDT"
+    ## [1] "2020-04-18 17:14:08 PDT"
 
 ``` r
 #Rbase
@@ -78,7 +78,7 @@ Sys.time()
 now()
 ```
 
-    ## [1] "2020-04-03 10:21:08 PDT"
+    ## [1] "2020-04-18 17:14:08 PDT"
 
 ``` r
 #Lubridate
@@ -87,7 +87,7 @@ now()
 str(Sys.time())
 ```
 
-    ##  POSIXct[1:1], format: "2020-04-03 10:21:08"
+    ##  POSIXct[1:1], format: "2020-04-18 17:14:08"
 
 ``` r
 class(Sys.time())
@@ -99,7 +99,7 @@ class(Sys.time())
 str(now())
 ```
 
-    ##  POSIXct[1:1], format: "2020-04-03 10:21:08"
+    ##  POSIXct[1:1], format: "2020-04-18 17:14:08"
 
 ``` r
 class(now())
@@ -255,14 +255,14 @@ Sometimes you’ll get date/times as numeric offsets from the “Unix Epoch”, 
 as_datetime(today())
 ```
 
-    ## [1] "2020-04-03 UTC"
+    ## [1] "2020-04-18 UTC"
 
 ``` r
 #> [1] "2020-01-15 UTC"
 as_date(now())
 ```
 
-    ## [1] "2020-04-03"
+    ## [1] "2020-04-18"
 
 ``` r
 #> [1] "2020-01-15"
@@ -602,7 +602,7 @@ h_age <- today() - ymd(19791014)
 h_age
 ```
 
-    ## Time difference of 14782 days
+    ## Time difference of 14797 days
 
 ``` r
 #> Time difference of 14703 days
@@ -616,7 +616,7 @@ Durations come with a bunch of convenient constructors:
 as.duration(h_age)
 ```
 
-    ## [1] "1277164800s (~40.47 years)"
+    ## [1] "1278460800s (~40.51 years)"
 
 ``` r
 #> [1] "1270339200s (~40.25 years)"
