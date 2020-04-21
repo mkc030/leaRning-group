@@ -92,5 +92,12 @@ unclass(mini_gap$country)
 #### Renaming
 To name something (especially in a function) use `setNames`. If used in a function, do this **LAST** as it will both set the names of the object and then RETURN the object. See example under ?setNames.
 
+#### Lists: determining the number of elements at each level in a list
+Use `map_int` from purrr package which returns and integer and preserves the NAME of element in the list (unlike lapply). The function you apply can be `length` (for a list of vectors, as below), or `nrow` if you have a list of data frames with multiple columns (as length would just count all the elements from top L to bottom R within that data frame).
+```{r}
+uneven_list <- list("a" = c(1, 2, 3), "b" = c(1:10), "c" = c(5:11))
+map_int(uneven_list, length) #Or use 'nrow' instead of length for data frames
+```
+
 ## Useful data visualization functions
 

@@ -17,6 +17,12 @@ Advanced R (first edition) - http://adv-r.had.co.nz
 
 Tidyverse style guide (ie how to make your code consistently legible to everyone) - https://style.tidyverse.org
 
+Happy git with R - https://happygitwithr.com
+
+Git and github for poets (youtube playlist) - https://www.youtube.com/playlist?list=PLRqwX-V7Uu6ZF9C0YMKuns9sLDzK6zoiV
+
+Introductions to purrr - [shorter](http://www.rebeccabarter.com/blog/2019-08-19_purrr/) and [longer](https://jennybc.github.io/purrr-tutorial/index.html)
+
 **Assignments:**
 
 https://stat545.stat.ubc.ca/evaluation/assignments/
@@ -28,4 +34,3 @@ https://jrnold.github.io/r4ds-exercise-solutions/
 Cheat sheets - https://rstudio.com/resources/cheatsheets/
 
 
-Please feel free to send a pull request with any additional suggestions :)
