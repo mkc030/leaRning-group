@@ -8,6 +8,8 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(gapminder)
+library(lubridate)
 options(digits=3)
 ```
 
@@ -17,6 +19,22 @@ options(digits=3)
 This is an online LaTeX writing and publishing tool, and has different modes depending on your expertise level with LaTeX. https://www.overleaf.com/for/authors Free for personal use :) It does however, only generate a PDF rather than a word doc, which can be an issue for submitting to certain journals.
 
 ## Useful math, stats, and summarizing functions
+#### A function to return the opposite of %in%
+```{r}
+'%nin%' <- Negate('%in%')
+```
+
+#### To determine one or more modes
+This function finds the factor or number with the most number of occurances. It will automatically remove any NAs and returns multiple modes. `v` = vector of numeric or character data. I couldn't find a function that did this in another package, so in case it is useful again in the future, here it is.
+Thanks to code from this [website](https://www.tutorialspoint.com/r/r_mean_median_mode.htm) and from Ken Williams on Stacks overflow.                  
+```{r}
+get.mode <- function(v) {
+  uniqv <- na.omit(unique(v))
+  tab <-tabulate(match(v, uniqv))
+  uniqv[tab == max(tab)]
+  #uniqv [which.max(tabulate(match(v, uniqv)))] #alternative to last two lines, but only returns the first appearance of any ties rather than both
+}
+```
 
 #### Determining the minimium of multiple numbers in a vector
 Min() or max() give you ONE output for a vector, while pmin() or pmax() can give you MULTIPLE  outputs, depending on the length of the input. From ?pmin help documentation:
@@ -27,7 +45,7 @@ pmin(5:1, pi) # Provides 5 output numbers
 ```
 This can be useful when trying to determine a new column based on several possible input values, kinda like an if_else statement but using max or min rather than logical evaluators. See Dr. Caroline Colijn's example using data from Tianjin. 
 ```{r}
-tdata=read.csv("Documents/R projects for laptop/EpiCoronaHack_Cluster/Tianjin135casesFeb22.csv",na.strings = "", stringsAsFactors = F)
+tdata=read.csv("/Users/Michelle 1/Documents/R projects/ClustersCOVID19/data/Tianjin135casesFeb22.csv",na.strings = "", stringsAsFactors = F)
 tdata$symptom_onset=as.Date(tdata$symptom_onset, format = "%d/%m/%Y")
 tdata$start_source=as.Date(tdata$start_source, format = "%d/%m/%Y")
 tdata$end_source=as.Date(tdata$end_source,format = "%d/%m/%Y" )
@@ -35,6 +53,8 @@ tdata$confirm_date=as.Date(tdata$confirm_date,format = "%d/%m/%Y" )
 
 tdata$end_source[which(is.na(tdata$end_source))]=tdata$symptom_onset[which(is.na(tdata$end_source))]  # if no end exposure: set to symptom onset 
 tdata$end_source = pmin(tdata$end_source, tdata$symptom_onset) # if end exposure after onset, set to onset 
+
+rm(tdata)
 ```
 
 #### Getting stats info out of plot objects
@@ -48,7 +68,23 @@ Cool!!! Good to remember that making the graph is actually a (desired) side effe
 #### Comparing doubles and integers
 Recall that `identical()` is very strict and does not convert between different classes, so `dplyr::near()` may be a better option.
 
-## Useful data wrangling functions
+## Useful data wrangling and data exploration functions
+#### Determining the number of distinct values in each of each data column after import
+This is one of the few things that `glimpse` does not actually show you. And is often quite useful to know when you import a new dataset. And an example of how `purrr` can be useful in data exploration.
+```{r}
+# Number of unique values in each column
+gapminder %>% map_dbl(n_distinct)
+
+# Look at the class of each column. Glimpse also tells you this, but sometimes it's too much info to quickly take in.
+gapminder %>% map_chr(class)
+
+# If you want both summaries together, using tilda as anonymous function shorthand
+  #This will give a whole bunch of coercesion warnings...that is fine!
+gapminder %>% map_df(~(data.frame(unique_values = n_distinct(.x),
+                                  column_class = class(.x))),
+                     .id = "variable_name") #To keep the variable names (otherwise just get a row with numbers)
+```
+
 #### Printing more lines to console than what it automatically gives you
 You need to make the data frame into a tibble and then use the print function to specify the number of rows. You can also use the options in `print` to change the max number of extra columns to print abbreviated information for if the width of the console isn't wide enough.
 ```{r printing more rows}
@@ -92,12 +128,183 @@ unclass(mini_gap$country)
 #### Renaming
 To name something (especially in a function) use `setNames`. If used in a function, do this **LAST** as it will both set the names of the object and then RETURN the object. See example under ?setNames.
 
-#### Lists: determining the number of elements at each level in a list
+You can also use dplyr's `rename`, which is similar to mutate. Remember that the NEW column name goes on the LEFT HAND side of the equal side, while the OLD column name goes on the RIGHT HAND side. The column names are unquoted, which has caused me many headaches  when trying to using in loops (i.e. `rename(df, col_names[i] = old_column_name)` usually does NOT work). My work around solution is use a temporary column name within the loop and then replace that at then end of the loop using `names()` and `str_replace` where quasi-quotation is not an issues. 
+
+Also, see the example using purrr (`map_df` and `data.frame`) below, as that might actually be even simpler as it binds a new column to your input data frame adn avoids renaming all together. If you still need to use `rename`, don't forget that *vectorized functions* such as `rename` or `mutate` will NOT work on lists, so you will need to wrap them in a `map_df` function to be able to apply `dplyr` functions on lists or nested datasets.
+```{r}
+#load example data
+sdates <- read_csv("/Users/Michelle 1/Documents/R projects/ClustersCOVID19/data/COVID-19_Singapore_eg_update_edges.csv")
+
+# Make a vector of all the columns that have a date
+date_cols <- c("presumed_infected_date", "last_poss_exposure", "symp_presumed_infector", "date_onset_symptoms",
+               "date_quarantine","date_hospital", "date_confirmation", "date_discharge")
+
+# Loop to fix dates in all date columns
+for(i in seq_along(date_cols)) {
+  
+  #Split the dates
+  sdates <- sdates %>% separate(date_cols[i],
+                                into = c("day","month","year"),
+                                sep = "/|-")
+  sdates$year <- ifelse(is.na(sdates$year), NA, 2020) #now the whole column is just 2020, not a mix of 20 and 2020, but keep the NAs
+  sdates$month <- as.numeric(sdates$month) #removes the issue of some months being represented as 02 or 2
+  sdates$day <- as.numeric(sdates$day) #removes the issue of some days being represented as 03 or 3
+  #Fix issue of days having been converted into years
+    #If the day is larger than 31, then subtract 2000, else return the day already present
+  sdates$day <- ifelse(sdates$day > 31, sdates$day - 2000, sdates$day)
+  #Unite back into one column, but turns NAs into character strings
+  sdates <- sdates %>% 
+    unite(col = new_date, day, month, year, sep = "/") 
+  #Replace the NA/NA/NA character strings back to NA
+  sdates$new_date <- str_replace(sdates$new_date, pattern = "NA/NA/NA", replacement = NA_character_)
+  #Turn column into a date
+  sdates$new_date <- dmy(sdates$new_date)
+  
+###~~~~Rename the column with the original column name~~~~~###
+  names(sdates) <- str_replace(names(sdates), pattern = "new_date", replacement = date_cols[i])
+
+  #Indicate where in the loop we are in case it fails silently
+  print(paste(date_cols[i], "column had dates fixed", sep = " "))
+}
+
+rm(sdates)
+```
+
+## Useful functions when dealing with lists: 
+#### Determining the number of elements at each level in a list
 Use `map_int` from purrr package which returns and integer and preserves the NAME of element in the list (unlike lapply). The function you apply can be `length` (for a list of vectors, as below), or `nrow` if you have a list of data frames with multiple columns (as length would just count all the elements from top L to bottom R within that data frame).
 ```{r}
 uneven_list <- list("a" = c(1, 2, 3), "b" = c(1:10), "c" = c(5:11))
 map_int(uneven_list, length) #Or use 'nrow' instead of length for data frames
 ```
 
+#### How to add a new column to your old data frame using purrr
+This seems like a much easier solution than fiddling around with a for loop and trying to bind and rename stuff.
+
+```{r}
+# Adding your new number to your old data frame
+addTen <- function(.x) {
+  return(.x + 10)
+}
+
+map_df(c(1, 5, 7),
+       function(.x){
+         return(data.frame(old_number = .x,
+                           new_number = addTen(.x)))
+       })
+```
+
+#### How to get example list data
+In this case, we are going for a list of data frames (which is kinda the opposite of a data frame with list-columns). This is how my data ends up half the time, so good to know how to pull a random subset for testing on!
+```{r}
+#Randomly keep only 5 rows from each continent
+gapminder_list <- gapminder %>% 
+                  split(gapminder$continent) %>% 
+                  map(~sample_n(., 5))
+
+gapminder_list
+```
+
+#### Useful functions to manipulate elements within a list
+I find that lists are a pain in the butt for extracting stuff out. And don't forget that vectorized functions (i.e. all of dplyr's summarizing functions) do not work on lists!!! So here are some useful functions that have been mentioned to help do battle with data inside of a list.
+
+* `pluck(.x, ...)` This allows you to extract elements from within a *list*. The argument `.x` is a vector and `...` is a list of accessors for indexing the object (can be an integer position, string name, or an accessor function such as `function(x) x[[2]]$elf`). If you have a list of accessors, you splice those with `!!!`. `pluck` returns NULL if the element does not exist. 
+
+* `pull(.data, var = -1)` This function allows you to extract a single variable from a *data frame*. The argument `var` is specified as either: a variable name, a positive integer (=gives position counting from the *left*), or a negative integer (= gives position counting from the *right*). From dplyr and so supports quasiquotation.
+
+* `reduce(.x, .f)` This function combines all elements of a list into a single object by iteratively applying a function that takes two inputs. Very very handy for doing many `left_join()` in a row or **doing repeated `rbinds` to turn the rows of a list back into a single data frame**. There is also a `reduce2` version. `accumulate` does the same things but also returns the intermediate values.
+```{r}
+#Ex of rbind and reducing a list into a data frame
+gapminder_list %>% reduce(rbind)
+
+#Ex of using reduce with an iterative math function
+reduce(c(1, 2, 3), sum)
+  #This is the equivalent of doing sum(sum(1,2), 3)
+
+#Ex of using accumulate
+accumulate(c(1, 2, 3), sum)
+```
+
+* `modify(.x, .f)` and `modify_if(.x, .p, .f, .else = NULL)` The argument `.f` can be a function or a formula. The argument `.p` is a single predicate function or a logical vector the same length as `.x`. The argument `.else` specifies what function is applied if `.p` evaluates to FALSE.
+```{r}
+# Modifying factors to characters
+str(iris)
+iris %>% 
+  modify_if(is.factor, as.character) %>% str()
+```
+
+* `keep(.x, .p)` This is the list equivalent of `select_if()` or `filter`. It only selects columns of a list (`.x`) that satisfy a given condition (`.p`). Only elementes where `.p` evaluates to TRUE will be kept.
+
+* `discard(.x, .p)`. This is like `keep`, except that elements where `.p` evalues to TRUE will be discarded.
+
+* `compact(.x, .p = identity)` This is like `discard`, except only elements where `.p` evaluates to an empty vector will be discarded
+```{r}
+#Keep all continents where mean life expectancy is less than 50 years
+gapminder_list %>% keep(~{mean(.x$lifeExp) < 50})
+
+# Discard all continents where average life expectancy is less than 50 years
+gapminder_list %>% discard(~{mean(.x$lifeExp) < 50})
+```
+
+* `every(.x, .p)` This asks a logical question of a list. For instance, does every continent in gapminder have an average life expectancy greater than 70?
+```{r}
+gapminder_list %>% every(~{mean(.x$lifeExp) > 70})
+```
+
+* `some(.x, .p)` This asks a logical question of a list. For instance, do *some* continents in gapminder have an average life expectancy greater than 70?
+```{r}
+gapminder_list %>% some(~{mean(.x$lifeExp) > 70})
+```
+
+* `has_element(.x, .y)` This is the equivalent of `%in%` for lists. The argument `.y` is the object to test for.
+```{r}
+list(1, 
+     c(2, 5, 1),
+     "a") %>% 
+  has_element("a")
+```
+
+
 ## Useful data visualization functions
+#### Making a list of plots
+I believe using `map2` and friends will return a list of plots, which you can then extract each element to see each plot; however, you would need to use `walk` to actually see the plots immediately, without having to call each one from within the list object. So which you use probably depends on your goal: do you want a list of plots to use in a different context (like maybe extract one or two plots at a time for a markdown or slides - use `map2`) vs. wanting them to appear immediately in your console for data exploration (use `walk`).
+
+Here is an example of using `map2` to make a list of plots: comparing life expectancy vs. GDP per capita for each continent/year combination. An example of using `walk` is in the `purrr` tutorial under the writing_functions markdown. 
+```{r}
+#Get all distinct combinations that occur
+continent_year <- gapminder %>% distinct(continent, year)
+head(continent_year, n = 20)
+
+#NOW extract the continents and year pairs as separate vectors
+conts <- continent_year %>% pull(continent) %>% as.character()
+yrs <- continent_year %>% pull(year)
+
+#Now plot
+plot_list <- map2(.x = conts,
+                  .y = yrs,
+                  .f = ~{
+                    gapminder %>% 
+                      filter(continent == .x,
+                             year == .y) %>% 
+                      ggplot() +
+                      geom_point(aes(x = gdpPercap, y = lifeExp)) +
+                      ggtitle(glue::glue(.x, " ", .y))
+                  })
+plot_list[[10]]
+```
+
+#### How to make nice breaks for a histogram
+Here is a function to do so
+```{r}
+#Define a function to make nice breaks on a histogram
+find_breaks <- function(x){
+  rng <- range(x, na.rm = T)
+  seq(rng[1], rng[2], length.out = 30) #Where 30 is the number of bins you are using; adjust as necessary
+  
+#Use map() to iterate find_breaks over sims (a list object with different dataset for plotting)
+    #Note this won't run here, just for ease of access to an example
+nice_breaks <- map(sims, find_breaks) 
+}
+```
+
 
