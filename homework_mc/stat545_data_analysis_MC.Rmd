@@ -239,6 +239,19 @@ c(df1$country, df2$country)
 fct_c(df1$country, df2$country)
 ```
 
+Trying to re-order a whole data frame based on values of one column? Try `arrange` from dplyr or else `order` from base R. 
+```{r}
+#TODO: this won't knit or run as it isn't referring to any actual data; re-write this later
+#Example of arranging by date_col using dplyr
+df <- arrange(df, date_col)     #arrange in ascending order
+df <- desc(df, date_col)        #arrange in descending order
+
+#Examples from base R
+df[order(df$date_col), ]        #arrange in ascending order
+df[rev(order(df$date_col)), ]   #arrange in descending order
+
+```
+
 ### Chapter 11 - Characters
 Great packages to use with characters: 
 

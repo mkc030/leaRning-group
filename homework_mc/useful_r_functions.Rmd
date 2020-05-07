@@ -307,4 +307,21 @@ nice_breaks <- map(sims, find_breaks)
 }
 ```
 
+#### How to make a ggplot legend using manually defined colors
+To find and manually define specific colors (rather than using a built-in color scheme), you need to load 'scales' package for this as well as your color schemes (e.g. viridis or colorbrewer). This will provide you with hexadecimal code (#rrggbb) for the colors you want to use. You can also add transparency directly into one or more colors by using a two digit code to indicate the alpha value directly after the hexadecimal code (#rrggbb**aa**). This is helpful if you are passing an object as a color key and you only want one (or a few colors) to have some degree of transparency.
+```{r}
+library(viridis)
+library(scales)
 
+# To show the colors in your 'plots' part of the console
+  #Note that viridis_pal is the discrete version of viridis colors
+show_col(viridis_pal()(3)) #Where the number is the number of levels in your factor you want to color
+
+#To display the ?hex? number for the colors in your console (aka so can copy/paste them into code!)
+viridis(n = 3)
+
+#To show colors using a different palate option in viridis
+  #Note that option = D (or option = "viridis") is the default
+show_col(viridis_pal(option = "inferno")(6))
+
+```
