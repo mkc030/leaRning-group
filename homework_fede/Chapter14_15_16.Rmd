@@ -1,0 +1,244 @@
+---
+title: "Chapter 14, 15, 16"
+author: "Federico Andrade-Rivas"
+date: "April 3, 2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r Loadpackages}
+library(tidyverse)
+
+```
+
+_But what if your data arrives in many pieces? There are many good (and bad) reasons why this might happen. How do you get it into one big beautiful tibble? These tasks break down into 3 main classes_:
+
+*Bind
+*Join
+*Lookup
+
+
+####14.1 Typology of data combination tasks
+
+*Bind ---> Like smashing rocks! Be careful
+*Join ----> Using a key variable to join
+*Lookup ----> special case of 'join'
+
+####14.1 Typology of data combination tasks
+
+
+
+```{r}
+fship <- tribble(
+                         ~Film,    ~Race, ~Female, ~Male,
+  "The Fellowship Of The Ring",    "Elf",    1229,   971,
+  "The Fellowship Of The Ring", "Hobbit",      14,  3644,
+  "The Fellowship Of The Ring",    "Man",       0,  1995
+)
+rking <- tribble(
+                         ~Film,    ~Race, ~Female, ~Male,
+      "The Return Of The King",    "Elf",     183,   510,
+      "The Return Of The King", "Hobbit",       2,  2673,
+      "The Return Of The King",    "Man",     268,  2459
+)
+ttow <- tribble(
+                         ~Film,    ~Race, ~Female, ~Male,
+              "The Two Towers",    "Elf",     331,   513,
+              "The Two Towers", "Hobbit",       0,  2463,
+              "The Two Towers",    "Man",     401,  3589
+)
+(lotr_untidy <- bind_rows(fship, ttow, rking))
+
+lotr_untidy2 <- rbind(fship, ttow, rking)
+lotr_untidy2
+```
+But what if one of the data frames is somehow missing a variable? Let’s mangle one and find out.
+
+We see that dplyr::bind_rows() does the row bind and puts NA in for the missing values caused by the lack of Female data from The Two Towers. Base rbind() refuses to row bind in this situation.
+
+```{r}
+ttow_no_Female <- ttow %>% mutate(Female = NULL)
+bind_rows(fship, ttow_no_Female, rking)
+
+#rbind(fship, ttow_no_Female, rking)
+```
+
+In conclusion, row binding usually works when it should (especially with dplyr::bind_rows()) and usually doesn’t when it shouldn’t. The biggest risk is being aggravated.
+
+
+###### 14.2.2 Column binding
+
+Column binding is much more dangerous because it often “works” when it should not. It’s your job to the rows are aligned and it’s all too easy to screw this up.
+
+The data in gapminder was originally excavated from 3 messy Excel spreadsheets: one each for life expectancy, population, and GDP per capital. Let’s relive some of the data wrangling joy and show a column bind gone wrong.
+
+I create 3 separate data frames, do some evil row sorting, then column bind. There are no errors. The result gapminder_garbage sort of looks OK. Univariate summary statistics and exploratory plots will look OK. But I’ve created complete nonsense!
+
+```{r}
+library(gapminder)
+
+life_exp <- gapminder %>%
+  select(country, year, lifeExp)
+
+pop <- gapminder %>%
+  arrange(year) %>% 
+  select(pop)
+  
+gdp_percap <- gapminder %>% 
+  arrange(pop) %>% 
+  select(gdpPercap)
+
+(gapminder_garbage <- bind_cols(life_exp, pop, gdp_percap))
+
+summary(gapminder$lifeExp)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>    23.6    48.2    60.7    59.5    70.8    82.6
+summary(gapminder_garbage$lifeExp)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>    23.6    48.2    60.7    59.5    70.8    82.6
+range(gapminder$gdpPercap)
+#> [1]    241 113523
+range(gapminder_garbage$gdpPercap)
+#> [1]    241 113523
+```
+NOTE: BEcasue variables are arranged in different ways, variables do not correspond to the country and tdate. Summary stats will still look OK.... dangerous
+
+One last cautionary tale about column binding. This one requires the use of cbind() and it’s why the tidyverse is generally unwilling to recycle when combining things of different length.
+
+I create a tibble with most of the gapminder columns. I create another with the remainder, but filtered down to just one country. I am able to cbind() these objects! Why? Because the 12 rows for Canada divide evenly into the 1704 rows of gapminder. Note that dplyr::bind_cols() refuses to column bind here.
+
+```{r}
+gapminder_mostly <- gapminder %>% select(-pop, -gdpPercap)
+gapminder_leftovers_filtered <- gapminder %>% 
+  filter(country == "Canada") %>% 
+  select(pop, gdpPercap)
+
+gapminder_nonsense <- cbind(gapminder_mostly, gapminder_leftovers_filtered)
+head(gapminder_nonsense, 14)
+
+```
+
+This data frame isn’t obviously wrong, but it is wrong. See how the Canada’s population and GDP per capita repeat for each country?
+
+Bottom line: Row bind when you need to, but inspect the results re: coercion. Column bind only if you must and be extremely paranoid.
+
+
+##Chapter 15
+
+The data
+```{r}
+superheroes <- tibble::tribble(
+       ~name, ~alignment,  ~gender,          ~publisher,
+   "Magneto",      "bad",   "male",            "Marvel",
+     "Storm",     "good", "female",            "Marvel",
+  "Mystique",      "bad", "female",            "Marvel",
+    "Batman",     "good",   "male",                "DC",
+     "Joker",      "bad",   "male",                "DC",
+  "Catwoman",      "bad", "female",                "DC",
+   "Hellboy",     "good",   "male", "Dark Horse Comics"
+  )
+
+publishers <- tibble::tribble(
+  ~publisher, ~yr_founded,
+        "DC",       1934L,
+    "Marvel",       1939L,
+     "Image",       1992L
+  )
+```
+
+inner_join(x, y): Return all rows from x where there are matching values in y, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.
+
+```{r}
+ijsp <- inner_join(superheroes, publishers)
+ijsp
+```
+We lose Hellboy in the join because, although he appears in x = superheroes, his publisher Dark Horse Comics does not appear in y = publishers. The join result has all variables from x = superheroes plus yr_founded, from y.
+
+#### 15.4 semi_join(superheroes, publishers)
+
+semi_join(x, y): Return all rows from x where there are matching values in y, keeping just columns from x. A semi join differs from an inner join because an inner join will return one row of x for each matching row of y, where a semi join will never duplicate rows of x. This is a filtering join.
+NOTE: If I put the funciont within () then it print it after it without needing to call it after.
+
+```{r}
+(sjsp <- semi_join(superheroes, publishers))
+```
+We get a similar result as with inner_join() but the join result contains only the variables originally found in x = superheroes. NOTE: YEAR I THEN MISSING FROM THE RESULT TIBBLE
+
+#### 15.5 left_join(superheroes, publishers)
+
+left_join(x, y): Return all rows from x, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.
+
+```{r}
+
+(ljsp <- left_join (superheroes, publishers))
+
+```
+We basically get x = superheroes back, but with the addition of variable yr_founded, which is unique to y = publishers. Hellboy, whose publisher does not appear in y = publishers, has an NA for yr_founded.
+
+#### 15.6 anti_join(superheroes, publishers)
+
+anti_join(x, y): Return all rows from x where there are not matching values in y, keeping just columns from x. This is a filtering join.
+
+```{r}
+
+(ajsp <- anti_join(superheroes, publishers))
+
+```
+
+#### 15.7 inner_join(publishers, superheroes)
+
+inner_join(x, y): Return all rows from x where there are matching values in y, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.
+
+```{r}
+(ijps <- inner_join(publishers, superheroes))
+
+```
+
+In a way, this does illustrate multiple matches, if you think about it from the x = publishers direction. Every publisher that has a match in y = superheroes appears multiple times in the result, once for each match. In fact, we’re getting the same result as with inner_join(superheroes, publishers), up to variable order (which you should also never rely on in an analysis).
+
+
+#### 15.8 semi_join(publishers, superheroes)
+
+semi_join(x, y): Return all rows from x where there are matching values in y, keeping just columns from x. A semi join differs from an inner join because an inner join will return one row of x for each matching row of y, where a semi join will never duplicate rows of x. This is a filtering join.
+
+```{r}
+
+(sjps <- semi_join(x = publishers, y = superheroes))
+
+```
+Now the effects of switching the x and y roles is more clear. The result resembles x = publishers, but the publisher Image is lost, because there are no observations where publisher == "Image" in y = superheroes.
+
+#### 15.9 left_join(publishers, superheroes)
+
+left_join(x, y): Return all rows from x, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.
+
+```{r}
+( ljps <- left_join (publishers, superheroes))
+
+```
+
+We get a similar result as with inner_join() but the publisher Image survives in the join, even though no superheroes from Image appear in y = superheroes. As a result, Image has NAs for name, alignment, and gender.`
+
+#### 15.10 anti_join(publishers, superheroes)
+
+anti_join(x, y): Return all rows from x where there are not matching values in y, keeping just columns from x. This is a filtering join.
+```{r}
+(ajps <- anti_join(publishers, superheroes))
+```
+We keep only publisher Image now (and the variables found in x = publishers). NOTE: different selection of "x and y" than previous anti_join example
+
+##### 15.11 full_join(superheroes, publishers)
+
+full_join(x, y): Return all rows and all columns from both x and y. Where there are not matching values, returns NA for the one missing. This is a mutating join.
+
+```{r}
+(fjsp <- full_join(superheroes, publishers))
+```
+
+We get all rows of x = superheroes plus a new row from y = publishers, containing the publisher Image. We get all variables from x = superheroes AND all variables from y = publishers. Any row that derives solely from one table or the other carries NAs in the variables found only in the other table.
+
+
+
+##16. Table lookup. Will not go through it. Does not seem I'll need it. Check in case you do so

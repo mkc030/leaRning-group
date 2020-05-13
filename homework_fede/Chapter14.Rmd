@@ -1,0 +1,125 @@
+---
+title: "Chapter 14"
+author: "Federico Andrade-Rivas"
+date: "April 3, 2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r Loadpackages}
+library(tidyverse)
+
+```
+
+_But what if your data arrives in many pieces? There are many good (and bad) reasons why this might happen. How do you get it into one big beautiful tibble? These tasks break down into 3 main classes_:
+
+*Bind
+*Join
+*Lookup
+
+
+####14.1 Typology of data combination tasks
+
+*Bind ---> Like smashing rocks! Be careful
+*Join ----> Using a key variable to join
+*Lookup ----> special case of 'join'
+
+####14.1 Typology of data combination tasks
+
+
+
+```{r}
+fship <- tribble(
+                         ~Film,    ~Race, ~Female, ~Male,
+  "The Fellowship Of The Ring",    "Elf",    1229,   971,
+  "The Fellowship Of The Ring", "Hobbit",      14,  3644,
+  "The Fellowship Of The Ring",    "Man",       0,  1995
+)
+rking <- tribble(
+                         ~Film,    ~Race, ~Female, ~Male,
+      "The Return Of The King",    "Elf",     183,   510,
+      "The Return Of The King", "Hobbit",       2,  2673,
+      "The Return Of The King",    "Man",     268,  2459
+)
+ttow <- tribble(
+                         ~Film,    ~Race, ~Female, ~Male,
+              "The Two Towers",    "Elf",     331,   513,
+              "The Two Towers", "Hobbit",       0,  2463,
+              "The Two Towers",    "Man",     401,  3589
+)
+(lotr_untidy <- bind_rows(fship, ttow, rking))
+
+lotr_untidy2 <- rbind(fship, ttow, rking)
+lotr_untidy2
+```
+But what if one of the data frames is somehow missing a variable? Let’s mangle one and find out.
+
+We see that dplyr::bind_rows() does the row bind and puts NA in for the missing values caused by the lack of Female data from The Two Towers. Base rbind() refuses to row bind in this situation.
+
+```{r}
+ttow_no_Female <- ttow %>% mutate(Female = NULL)
+bind_rows(fship, ttow_no_Female, rking)
+
+#rbind(fship, ttow_no_Female, rking)
+```
+
+In conclusion, row binding usually works when it should (especially with dplyr::bind_rows()) and usually doesn’t when it shouldn’t. The biggest risk is being aggravated.
+
+
+###### 14.2.2 Column binding
+
+Column binding is much more dangerous because it often “works” when it should not. It’s your job to the rows are aligned and it’s all too easy to screw this up.
+
+The data in gapminder was originally excavated from 3 messy Excel spreadsheets: one each for life expectancy, population, and GDP per capital. Let’s relive some of the data wrangling joy and show a column bind gone wrong.
+
+I create 3 separate data frames, do some evil row sorting, then column bind. There are no errors. The result gapminder_garbage sort of looks OK. Univariate summary statistics and exploratory plots will look OK. But I’ve created complete nonsense!
+
+```{r}
+library(gapminder)
+
+life_exp <- gapminder %>%
+  select(country, year, lifeExp)
+
+pop <- gapminder %>%
+  arrange(year) %>% 
+  select(pop)
+  
+gdp_percap <- gapminder %>% 
+  arrange(pop) %>% 
+  select(gdpPercap)
+
+(gapminder_garbage <- bind_cols(life_exp, pop, gdp_percap))
+
+summary(gapminder$lifeExp)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>    23.6    48.2    60.7    59.5    70.8    82.6
+summary(gapminder_garbage$lifeExp)
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#>    23.6    48.2    60.7    59.5    70.8    82.6
+range(gapminder$gdpPercap)
+#> [1]    241 113523
+range(gapminder_garbage$gdpPercap)
+#> [1]    241 113523
+```
+NOTE: BEcasue variables are arranged in different ways, variables do not correspond to the country and tdate. Summary stats will still look OK.... dangerous
+
+One last cautionary tale about column binding. This one requires the use of cbind() and it’s why the tidyverse is generally unwilling to recycle when combining things of different length.
+
+I create a tibble with most of the gapminder columns. I create another with the remainder, but filtered down to just one country. I am able to cbind() these objects! Why? Because the 12 rows for Canada divide evenly into the 1704 rows of gapminder. Note that dplyr::bind_cols() refuses to column bind here.
+
+```{r}
+gapminder_mostly <- gapminder %>% select(-pop, -gdpPercap)
+gapminder_leftovers_filtered <- gapminder %>% 
+  filter(country == "Canada") %>% 
+  select(pop, gdpPercap)
+
+gapminder_nonsense <- cbind(gapminder_mostly, gapminder_leftovers_filtered)
+head(gapminder_nonsense, 14)
+
+```
+
+This data frame isn’t obviously wrong, but it is wrong. See how the Canada’s population and GDP per capita repeat for each country?
+
+Bottom line: Row bind when you need to, but inspect the results re: coercion. Column bind only if you must and be extremely paranoid.
