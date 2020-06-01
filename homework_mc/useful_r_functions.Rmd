@@ -127,6 +127,10 @@ mini_gap <- gapminder %>%
 unclass(mini_gap$country)
 ```
 
+You can also use the `levels` function to just tell you the levels of a factor (rather than just using it as an argument within `factor` to assign levels).
+```{r}
+levels(mini_gap$country)
+```
 
 #### Renaming
 To name something (especially in a function) use `setNames`. If used in a function, do this **LAST** as it will both set the names of the object and then RETURN the object. See example under ?setNames.

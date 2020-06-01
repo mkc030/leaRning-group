@@ -457,9 +457,10 @@ map_dbl(c(1, 4, 7), function(.x){return(.x + 10)})
 map_dbl(c(1, 4, 7), ~{.x +10})
 
 # map_df returns a data frame BUT you need consistent column names for each iteration
-#This fails
-map(c(1, 4, 7),
-    addTen)
+#This fails...but won't knit if I leave something in that throws an error
+
+#map_df(c(1, 4, 7),
+#    addTen)
 
 #This works
 map_df(data.frame(a = 1, b = 4, c = 7),

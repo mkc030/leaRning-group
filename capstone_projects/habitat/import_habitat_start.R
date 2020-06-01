@@ -41,7 +41,7 @@ all.wtlds <- c("JAC", "LAX", "WBC",
                "SIS", "STA", "TRL", "TUY",
                "TWU", "WCK")
 
-### 3. Write a function to calculate the PLAND and turn the list into a dataframe!
+### 3. Write a function to calculate the PLAND and turn the list into a dataframe! -----------------------------------------
   #I renamed the landcover types using lc_names object above while doing this in a loop, but you could maybe do this after
 
   #Remember that (using dplyr) PLAND can be calculated by n() = sum(n()) for each unique wetland-year combination
