@@ -23,7 +23,7 @@ glimpse(edata)
 
 ### Goal 2: Add a column to edata for mon_yr using a function: WITHOUT purrr  -----------------------------------------------------------------------------------------------
 
-add_monyr <- function(ARGUMENTorARGUMENTS){    
+add.monyr <- function(ARGUMENTorARGUMENTS){    
                 BODYofFUNCTION
               }
 
@@ -32,7 +32,7 @@ add_monyr <- function(ARGUMENTorARGUMENTS){
 
 ### GOAL 3: Alternatively, Add a column for mon_yr using a function: WITH purrr  -----------------------------------------------------------------------------------------------
 
-add_monyr2 <- function(ARGUMENTorARGUMENTS){    
+add.monyr2 <- function(ARGUMENTorARGUMENTS){    
                   BODYofFUNCTION
                 }
 
