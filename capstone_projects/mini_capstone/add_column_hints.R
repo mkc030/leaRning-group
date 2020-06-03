@@ -30,6 +30,10 @@ head(edata$date_col)
 mini_edata <- edata[2500:2600, ]
   #Now use mini_edata instead of edata in your function
 
+#Based on this working snippet of code below (see Hints for Goal 2): 
+    #you will need to define 2 arguments for the function (1) the column with dates and (2) the dataset you want to attach it to
+    #or else define only 1 argument (the column with dates) and the use another method to associate the function results to your dataset...
+    #this could be dplyr::mutate (i.e. for goal 2) or purrr functions (i.e. for goal 3)
 
 
 
@@ -53,7 +57,11 @@ edata$mon_yr <- droplevels(edata$mon_yr)  #As different datasets will not all ha
 # Remove the 'mon_yr' column before re-making it with a function
 edata <- select(edata, -mon_yr)  
 
-
+#Based on this working snippet of code: 
+    #what are the variables that will change between different datasets? 
+    #(1) the name of the column with dates (e.g. `edata$date_col`)
+    #(2) the name of the dataset (e.g. `edata`)
+    #These are the inputs to your function and will be the arguments!
 
 
 

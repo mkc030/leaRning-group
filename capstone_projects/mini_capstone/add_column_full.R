@@ -20,7 +20,9 @@ edata <- mutate(edata, date_col = dmy(date_col))
 glimpse(edata)
 
 
-### Goal 2 and 3: Add a column to edata for mon_yr using a function: WITHOUT purrr  -----------------------------------------------------------------------------------------------
+### Goal 2: Add a column to edata for mon_yr using a function: WITHOUT purrr  -----------------------------------------------------------------------------------------------
+
+### Goal 2, solution A: include column of dates and dataframe as function arguments 
 add.monyr <- function(dates, mydata){    
   mn <- month(dates, label = T, abbr = T)
   yr <- year(dates)
@@ -37,10 +39,40 @@ add.monyr <- function(dates, mydata){
   return(mydata)
 }
 
-edata <- add.monyr(dates = edata$date_col, mydata = edata) 
-glimpse(edata)
+#Apply the function directly to the dataset
+edata1 <- add.monyr(dates = edata$date_col, mydata = edata) 
 
-edata <- select(edata, -mon_yr)  #Remove the 'mon_yr' column before re-making it with another function
+#Checked it worked ok
+glimpse(edata1)
+levels(edata1$mon_yr) #No level for Aug-2016; great as no data collected in this month!
+
+
+### Goal 2, solution B: use dplyr::mutate to add the mon-yr column
+  #(i.e. include only column of dates as your function argument and use `mutate` to add the function results to your dataset
+# Write the function
+add.monyr2 <- function(dates){
+  mn <- month(dates, label = T, abbr = T)
+  yr <- year(dates)
+  mon_yr <- paste(mn, yr, sep = "-")
+  mon_yr <- factor(mon_yr, levels = c("Aug-2016", 
+                                             "Sep-2016", "Oct-2016", "Nov-2016", "Dec-2016",
+                                             "Jan-2017", "Feb-2017", "Mar-2017", "Apr-2017",
+                                             "May-2017", "Jun-2017", "Jul-2017", "Aug-2017",
+                                             "Sep-2017", "Oct-2017", "Nov-2017", "Dec-2017",
+                                             "Jan-2018", "Feb-2018", "Mar-2018", "Apr-2018",
+                                             "May-2018", "Jun-2018", "Jul-2018", "Aug-2018"))
+}
+
+#Use `mutate` from dplyr to apply the function to the dataset
+edata2 <- mutate(edata, mon_yr = add.monyr2(dates = date_col)) 
+
+#See how many levels of factor 'mon_yr' there are...Aug-2016 still there, even though no data collected in Aug 2016
+levels(edata2$mon_yr)
+
+#Now need to droplevels manually outside of this funtion and check it worked
+edata2$mon_yr <- droplevels(edata2$mon_yr)
+levels(edata2$mon_yr) #No level for Aug-2016; great!
+
 
 
 ### Goal 3: Alternatively, Add a column for mon_yr using a function: WITH purrr  -----------------------------------------------------------------------------------------------
@@ -49,7 +81,7 @@ mini_edata <- edata[2500:2600, ]
 
 ### Goal 3, solution A: using map_df
 # Define another function based on structure used in examples above
-add.monyr2 <- function(.x){    
+add.monyr3 <- function(.x){    
   mn <- month(.x, label = T, abbr = T)
   yr <- year(.x)
   mon_yr <- paste(mn, yr, sep = "-")
@@ -68,7 +100,7 @@ add.monyr2 <- function(.x){
 fdates <- map_df(mini_edata$date_col,
                 function(.x){
                   return(data.frame(date_col = .x,   #Notice that you are keeping your old vector of numbers here     
-                                    mon_yr = add.monyr2(.x)))
+                                    mon_yr = add.monyr3(.x)))
                 })
 glimpse(fdates)
 fdates <- unique(fdates) #If don't select down to only the unique combinations, you get WAY too many rows when you join
@@ -97,10 +129,11 @@ e.new2 <- mini_edata %>%
           mutate(mon_yr = map(date_col, add.monyr2)) 
 
 glimpse(e.new2)
-      #hmmm...this returns mon_yr as a LIST...which is not ideal...would work with map_chr if I was not trying to save as an ordered factor within the function
+      #hmmm...this returns mon_yr as a LIST...which is not ideal...
+      #would work with map_chr if I was not trying to save as an ordered factor within the function
 
 #Let's try again with a modified function (withOUT ordering the factor) so can use map_chr and not get new column as a list 
-add.monyr3 <- function(.x){    
+add.monyr4 <- function(.x){    
   mn <- month(.x, label = T, abbr = T)
   yr <- year(.x)
   mon_yr <- paste(mn, yr, sep = "-")
@@ -116,7 +149,7 @@ add.monyr3 <- function(.x){
 }
 
 e.new3 <- mini_edata %>% 
-  mutate(mon_yr = map_chr(date_col, add.monyr3)) 
+  mutate(mon_yr = map_chr(date_col, add.monyr4)) 
 
 glimpse(e.new3) #Better
 
