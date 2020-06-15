@@ -316,7 +316,9 @@ nice_breaks <- map(sims, find_breaks)
 
 #### How to make a ggplot legend using manually defined colors
 To find and manually define specific colors (rather than using a built-in color scheme), you need to load 'scales' package for this as well as your color schemes (e.g. viridis or colorbrewer). This will provide you with hexadecimal code (#rrggbb) for the colors you want to use. You can also add transparency directly into one or more colors by using a two digit code to indicate the alpha value directly after the hexadecimal code (#rrggbb**aa**). This seems particularly helpful if you are passing an object as a color key and you only want one (or a few colors) to have some degree of transparency; rather than all colors if assign within a geom in ggplot.
-```{r}
+
+`Paletteer` package is supposed to be amazing for having awesome color palettes but I cannot find examples of how to actually use it and I cannot get it to work currently.
+```{r viridis}
 # To show the colors in your 'plots' part of the console
   #Note that viridis_pal is the discrete version of viridis colors
 show_col(viridis_pal()(3)) #Where the number is the number of levels in your factor you want to color
@@ -346,6 +348,29 @@ show_col(viridis_pal(option = "inferno")(6))
 
 ```
 
+```{r palatteer, eval=FALSE}
+#TODO: Currently I CANNOT get paletteer to work for me with ggplot, so need to play with this a little more
+
+### Paletteer library
+library(paletteer)
+
+#To figure out which are possible color palettes (eg based on Number of available colors)
+(co <- filter(palettes_d_names, length >= 18))
+(co <- filter(palettes_c_names, package == "gameofthrones"))
+(co <- filter(palettes_c_names, package == "harrypotter"))
+
+#To get hex codes for continous color palettes
+
+#To get hex codes for discrete color patettes
+
+#how to show colors with paletteer package
+
+#how to add color themes to ggplot
+
+```
+
+#### How to make publication-ready plots
+I haven't had a change to really play around with it, but apparently `hrbrthemes` has awesome themes relating to font and typeset that makes ggplot figures publication ready.
 
 #### How to make an interactive heatplot
 Basically you just wrap a ggplot in `plotly`. Apparently it is good practice to create custom text for people to read when they hover their cursor over a spot. You can also save this interactive plot. This example is copied directly from 'the R graph gallery' [website](https://www.r-graph-gallery.com/index.html), from the heatmap section. This website is a super great plotting resource!!!
@@ -371,3 +396,22 @@ ggplotly(p, tooltip="text")
 # library(htmlwidgets)
 # saveWidget(pp, file=paste0( getwd(), "/HtmlWidget/ggplotlyHeatmap.html"))
 ```
+
+
+#### How to adjust figure size in Rmarkdown output
+Useful reference websites are: [short summary](https://sebastiansauer.github.io/figure_sizing_knitr/) and [more detail](http://www.zevross.com/blog/2017/06/19/tips-and-tricks-for-working-with-images-and-figures-in-r-markdown-documents/#arguments-out.width-and-out.height-apply-to-both-existing-images-and-r-generated-figures).
+Default values are `fig.width` = 7 and `fig.height` = 7 (both refering to measurements in inches). DPI default is 96. The figure sizing setting will affect size for dynamic R plots (i.e. in the chunk, HTML, and I believe in the PDF), and does not rescale the font sizes (so you can make a really big ggplot but the font will end up tiny). However, you can also use `out.width` and `out.height` to resize figures when using Latex (i.e. for PDFs). Ex) `{r fig.3, out.width = "40%"}`. The output size can be specified as a percentage (using a character string ending with %) or as size in pixels (using a character string ending in px). When specifying with `out.XXX`, your fonts, etc will also be scaled (unlike with specifying dimensions using `fig.XXX` commands).
+
+You can also specify figure alignment using a character string (eg `{r fig3, fig.align = "center"}`) or aspect ratio without adjusting both figure height/width (eg `{r fig3, fig.width = 5, fig.asp = 0.62}`).
+
+There are three different ways you can define figure dimension. 
+
+1. In each individual chunk, meaning you can adjust each figure individually
+2. In the global options chunk at the start of the document (eg `knitr::opts_chunk$set(fig.width = 12, fig.height = 8)`)
+3. In the YAML header (which will also set global options). See example below:
+title: "My document"
+output: html_document:
+fig_width: 12
+fig_height: 8
+
+
