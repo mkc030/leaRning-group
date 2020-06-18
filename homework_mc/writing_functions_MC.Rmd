@@ -123,6 +123,33 @@ length(a["veg"])
 length(a["veg"][[1]])  #contrast with the length of the veg vector itself
 ```
 
+**Using PURRR functions to apply functions at different depths of a list:** Lists can be transformed by using the `modify` and its family of functions. This can be particularly useful when you have lists with multiple depths; however, it does seem that the list MUST have names at different depths for `modify_depth` to work (ditto for other purrr functions like `flatten`, `flatten_dfr`, or `reduce`). What does this actually mean? Below is an example where I have a list (`wtld_lc`) that does NOT have names for the column elements for each wetland, and so R thinks it only has a depth of 2. However, when I transform the elements within that list into a data frame and put it back into a list (`pland_list`) R now recognizes the names for the columns and that the depth is actually 3.
+
+```{r PURR and modify_depth}
+#Load the data
+load("capstone_projects/habitat/wetlands_with_landcover_as_list.Rdata")
+load("pland_list_for_function_writing_ex.rdata") #pland_list
+
+#How to determine the depth of a list
+vec_depth(wtld_lc)         #2
+vec_depth(pland_list)      #3
+
+#Example of subsetting with square brackets to different depths of the list
+pland_list[[1]]            #Returns the 'BHER' df
+pland_list[[1]][[1]]       #14 12 12 14 12 12 12 12 10 10  5  5  8  5  8  9  9 10 10  5  5
+pland_list[[1]][[1]][[1]]  #14
+
+# Using modify_depth
+mini_pland <- pland_list[1:3]
+modify_depth(.x = mini_pland, .depth = 2, .f = mean)
+modify_depth(.x = mini_pland, .depth = 1, .f = mean) #Gives NA because there is a character column in there, not sure how to fix right now...
+
+#Using reduce and flatten)
+reduce(.x = mini_pland, .f = bind_rows) #Works
+flatten_dfr(.x = mini_pland, .id = "wetland") #BUT...only returns the last wetland
+#reduce(.x = wtld_lc, .f = bind_rows) #Throws an error and says you need names
+```
+
 ### Matrices and data flavors: 
 A matrix is an alternative to data frames for storing rectangular data. Matrices are generalizations of atomic vectors, so all elements must be of the same class. Indexing is similar to that of a vector or a list, except that you can use `[i, j]`, where `i` = row and `j` = column. You can fill a matrix with a vector, by giving row and column numbers (and names) at creation. If the input vector is not long enough, R will recycle it.
 ```{r making matrices from vectors}
