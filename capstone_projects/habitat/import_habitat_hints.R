@@ -39,6 +39,8 @@ lc_names <- tibble(landcover = 0:15,
   #and then I will go through it again explaining what it does line by line (B), 
   #and then again showing how I made sure the loop was working (C)
 
+#~~~ BUT remember than when making the code, you'd actually be doing part (C) FIRST and THEN cleaning up the code (i.e. ending with A or B)
+
 ###~~~                 (A) Just the code                   ~~~###
 spatial_list = list()
 pland_list = list()
