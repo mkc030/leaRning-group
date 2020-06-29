@@ -4,13 +4,14 @@
 ###                                                                                           ###
 #################################################################################################
 
-### 1. Load packages-------------------------------------------------------------------------------------------------------------
+### 1. Load packages------------------------------------------------------------------------------------------------------------------------------
 library(tidyverse) #Note dplyr masks 'raster' extract() and select() functions
+library(viridis) #For prettier plot colors
 
 load("capstone_projects/habitat/wetlands_with_landcover_as_list.Rdata")
 glimpse(wtld_lc)
 
-### 2. Make data frames that might be useful to function and capstone goals ----------------------------------------------
+### 2. Make data frames that might be useful to function and capstone goals ----------------------------------------------------------------------
 
 # Make a data frame that provides more detailed UMD landcover names
 lc_names <- tibble(landcover = 0:15,
@@ -41,7 +42,7 @@ all.wtlds <- c("JAC", "LAX", "WBC",
                "SIS", "STA", "TRL", "TUY",
                "TWU", "WCK")
 
-### 3. Write a function to calculate the PLAND and turn the list into a dataframe! -----------------------------------------
+### 3. Write a function to calculate the PLAND and turn the list into a dataframe! ---------------------------------------------------------------
 
 ### Function version #A: just wrap double loops inside a function
 
@@ -204,29 +205,47 @@ glimpse(wtld_all_lc)
 #My results from functions A and B are similar but not exactly the same. Close enough for what I want anyways so I'm happy.
 
 
-### 4. Keep only the dominant (i.e. highest proportion) pland for each wetland_year ---------------------------------------
+### 4. Keep only the dominant (i.e. highest proportion) pland for each wetland_year -------------------------------------------------------------
     #And turn this into a "wide" data frame where each row is a unique wetland-year combination
+
 
 #I already found a solution that works for me (in the 'import_habitat_full.R' script) so I won't repeat here
 
 
 
-# What should this look like in the end?
-load("capstone_projects/habitat/wetlands_dominant_landcover.Rdata")
-glimpse(wtld_pland)
+
+### 5. Graph the results of either step 3 or step 4  --------------------------------------------------------------------------------------------
+
+  #I will make a heatmap of PLAND values from step 3 using the 'wtld_df' object (); made using function option A (m.extract.pland)
+
+### First, need to change some of the names in the 'lc_name' column so it plots nicely
+# Remove the 'UMD_##_' prefix
+wtld_df$lc_name <- str_sub(wtld_df$lc_name, start = 8)
+
+# Shorten the remaining character strings in the name
+wtld_df$lc_name <- str_replace(wtld_df$lc_name, pattern = "evergreen_needleleaf", replacement = "evergreen_nleaf")
+wtld_df$lc_name <- str_replace(wtld_df$lc_name, pattern = "evergreen_broadleaf", replacement = "evergreen_bleaf")
+wtld_df$lc_name <- str_replace(wtld_df$lc_name, pattern = "deciduous_needleleaf", replacement = "deciduous_nleaf")
+wtld_df$lc_name <- str_replace(wtld_df$lc_name, pattern = "deciduous_broadleaf", replacement = "deciduous_bleaf")
+wtld_df$lc_name <- str_replace(wtld_df$lc_name, pattern = "closed_shrubland", replacement = "shrub_closed")
+wtld_df$lc_name <- str_replace(wtld_df$lc_name, pattern = "open_shrubland", replacement = "shurb_open")
+
+# Add a column with just wetland name for facetting; can extract by separating the 'wtld_yr' column
+wtld_df <- separate(wtld_df, 
+                    col = wtld_yr,  #This is the name of the column I want to separate into two different columns
+                    into = c("wtld", NA), #Don't want to keep the part after the period, so put NA for the second column 
+                    sep = "\\.",   #This argument is based on a regular expression, so need to escape the period, and another escape for the first backslash
+                    remove = F)    #Still want to keep the original 'wtld_yr' column
+
+### Second, plot with ggplot
+ggplot(wtld_df, aes(x = lc_name, y = wtld_yr, fill = pland)) +
+  geom_tile() +
+  facet_grid(wtld ~ ., scales = "free_y", space = "free_y") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_viridis(discrete = F)
 
 
-### 5. Graph the results of either step 3 or step 4  ------------------------------------------------------------------------
 
-
-
-
-
-
-
-
-
-# What should this look like in the end? No idea yet!!! :)
 
 
 
